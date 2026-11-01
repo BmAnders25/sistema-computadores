@@ -86,11 +86,13 @@
 @stop
 
 @section('footer')
-<footer>
-    <p><img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" width="4%" style="border-radius: 15px" alt="Logo S.O.AH"> © {{ date('Y') }} S.O.A.H.  Sistema De Organización y Administración Hotelera . Todos los derechos reservados.</p>
-</footer>
+    <div style="max-height: 55px;" class="text-center text-muted">
+        <p>
+            <img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" alt="Logo UP" style="max-height: 70px; border-radius: 15px" class="mr-2"> 
+            © {{ date('Y') }} S.R.C - Sistema de Reserva de Computadores - Universidad de Pamplona Sede Villa del Rosario. Todos los derechos reservados.
+        </p>
+    </div>
 @stop
-
 @section('js')
 
     @if ($message = Session::get('success'))

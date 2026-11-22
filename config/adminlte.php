@@ -358,6 +358,30 @@ return [
         'icon_color' => 'green',
         'classes'    => 'text-sm',
     ],
+    [
+        'text'       => 'Aulas',
+        'route'      => 'aulas.index',
+        'can'        => ['ver-aulas'],
+        'icon'       => 'fas fa-building',
+        'icon_color' => 'purple',
+        'classes'    => 'text-sm',
+    ],
+    [
+        'text'       => 'Bloques horarios',
+        'route'      => 'bloques-horarios.index',
+        'can'        => ['ver-bloques-horarios'],
+        'icon'       => 'fas fa-clock',
+        'icon_color' => 'yellow',
+        'classes'    => 'text-sm',
+    ],
+    [
+        'text' => 'Reservas', 
+        'route' => 
+        'reservas.index', 
+        'can' => ['ver-reservas'],
+        'icon' => 'fas fa-calendar-check', 
+        'icon_color' => 'cyan', 
+         'classes' => 'text-sm'],
 
     // --- Configuración ---
     ['header' => 'CONFIGURACIÓN', 'classes' => 'text-uppercase text-light small fw-semibold'],

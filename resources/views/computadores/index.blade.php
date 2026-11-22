@@ -52,12 +52,14 @@
                     {{-- Serial en Negrita --}}
                     <td><strong>{{ $computador->serial }}</strong></td>
 
-                    {{-- Ubicación con datos bien separados --}}
+                    {{-- Ubicación con datos relacionales de Aulas --}}
                     <td>
                         <div class="py-1">
-                            <span class="badge bg-purple px-2 py-1 mb-1 d-inline-block">{{ $computador->bloque }}</span>
+                            <span class="badge bg-purple px-2 py-1 mb-1 d-inline-block">
+                                {{ $computador->aula->bloque ?? 'Sin Bloque' }}
+                            </span>
                             <div class="text-muted small">
-                                <i class="fas fa-door-open mr-1"></i>{{ $computador->laboratorio_aula }}
+                                <i class="fas fa-door-open mr-1"></i>{{ $computador->aula->nombre ?? 'Sin Aula' }}
                             </div>
                         </div>
                     </td>

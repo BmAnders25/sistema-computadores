@@ -27,7 +27,7 @@
             <div class="row">
                 {{-- Serial --}}
                 <x-adminlte-input name="serial" label="Número de Serial" placeholder="Ej: SN-987654321"
-                    fgroup-class="col-md-4" value="{{ old('serial', $computador->serial) }}" required>
+                    fgroup-class="col-md-6" value="{{ old('serial', $computador->serial) }}" required>
                     <x-slot name="prependSlot">
                         <div class="input-group-text bg-gradient-dark">
                             <i class="fas fa-barcode"></i>
@@ -35,25 +35,28 @@
                     </x-slot>
                 </x-adminlte-input>
 
-                {{-- Bloque --}}
-                <x-adminlte-input name="bloque" label="Bloque" placeholder="Ej: Bloque A"
-                    fgroup-class="col-md-4" value="{{ old('bloque', $computador->bloque) }}" required>
-                    <x-slot name="prependSlot">
-                        <div class="input-group-text bg-gradient-navy">
-                            <i class="fas fa-building"></i>
+                {{-- Laboratorio / Aula (Relación) --}}
+                <div class="form-group col-md-6">
+                    <label for="aula_id">Laboratorio / Aula</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text bg-gradient-purple text-white">
+                                <i class="fas fa-door-open"></i>
+                            </div>
                         </div>
-                    </x-slot>
-                </x-adminlte-input>
-
-                {{-- Laboratorio o Aula --}}
-                <x-adminlte-input name="laboratorio_aula" label="Laboratorio / Aula" placeholder="Ej: Lab. Sistemas 1"
-                    fgroup-class="col-md-4" value="{{ old('laboratorio_aula', $computador->laboratorio_aula) }}" required>
-                    <x-slot name="prependSlot">
-                        <div class="input-group-text bg-gradient-purple">
-                            <i class="fas fa-door-open"></i>
-                        </div>
-                    </x-slot>
-                </x-adminlte-input>
+                        <select name="aula_id" id="aula_id" class="form-control @error('aula_id') is-invalid @enderror" required>
+                            <option value="">Seleccione un laboratorio o aula</option>
+                            @foreach($aulas as $aula)
+                                <option value="{{ $aula->id }}" {{ old('aula_id', $computador->aula_id) == $aula->id ? 'selected' : '' }}>
+                                    {{ $aula->bloque }} - {{ $aula->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('aula_id')
+                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+                </div>
             </div>
 
             <div class="row">

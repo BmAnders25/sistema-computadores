@@ -12,11 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('computadores', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('codigo')->unique();
-            $table->string('serial', 100);
-            $table->string('bloque', 20);
-            $table->string('laboratorio_aula', 50);
+           $table->id();
+        $table->uuid('codigo')->unique();
+        $table->string('serial', 100);
+        
+        // Cambia la definición de aula_id para asegurar compatibilidad estricta
+        $table->unsignedBigInteger('aula_id')->nullable();
+        $table->foreign('aula_id')->references('id')->on('aulas')->nullOnDelete();
+    
+        // O si prefieres la forma corta de Laravel asegurando tipo BIGINT:
+        // $table->foreignId('aula_id')->nullable()->constrained('aulas')->nullOnDelete();
+        
+        $table->string('bloque', 20)->nullable();
+        $table->string('laboratorio_aula', 50)->nullable();
+
             $table->enum('tipo_equipo', ['portatil', 'escritorio', 'all_in_one'])->default('escritorio');
             $table->string('marca', 50);
             $table->string('modelo', 50)->nullable();

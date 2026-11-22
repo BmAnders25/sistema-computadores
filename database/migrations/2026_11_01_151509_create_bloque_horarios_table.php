@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('aulas', function (Blueprint $table) {
+        Schema::create('bloques_horarios', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre', 50);
+            $table->time('hora_inicio');
+            $table->time('hora_fin');
+            $table->boolean('activo')->default(true);
             $table->timestamps();
-        });
+});
     }
 
     /**
@@ -22,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('aulas');
+        Schema::dropIfExists('bloque_horarios');
     }
 };

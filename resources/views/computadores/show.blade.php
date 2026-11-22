@@ -86,17 +86,17 @@
         </div>
 
         <div class="row">
-            {{-- Ubicación: Bloque y Laboratorio/Aula --}}
+            {{-- Ubicación Relacional: Bloque y Aula --}}
             <div class="col-md-6">
                 <x-adminlte-info-box title="Bloque" 
-                    text="{{ $computador->bloque }}" 
+                    text="{{ $computador->aula->bloque ?? 'No asignado' }}" 
                     icon="fas fa-building" 
                     theme="navy"/>
             </div>
 
             <div class="col-md-6">
                 <x-adminlte-info-box title="Laboratorio / Aula" 
-                    text="{{ $computador->laboratorio_aula }}" 
+                    text="{{ $computador->aula->nombre ?? 'No asignado' }}" 
                     icon="fas fa-door-open" 
                     theme="purple"/>
             </div>
@@ -172,7 +172,6 @@
     <a href="{{ route('computadores.index') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Regresar
     </a>
-
 </div>
 @stop
 

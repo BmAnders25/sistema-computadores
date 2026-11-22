@@ -30,6 +30,9 @@ class RoleSeeder extends Seeder
             'crear-reservas'         => $usuarios,
             'cancelar-reservas'      => $usuarios,
             'reservar-aulas'         => ['Docente', 'Administracion'],
+            'editar-reservas'        => ['Administracion'],
+            'aprobar-reservas'      => ['Administracion', 'Celador'],
+
             // Entregas y devoluciones
             'ver-entregas'           => $staff,
             'registrar-entregas'     => $staff,
@@ -39,6 +42,24 @@ class RoleSeeder extends Seeder
             'crear-computadores'     => $admin,
             'editar-computadores'    => $admin,
             'borrar-computadores'    => $admin,
+            // Aulas
+            'ver-aulas'              => $todos,
+            'crear-aulas'            => $admin,
+            'editar-aulas'           => $admin,
+            'borrar-aulas'           => $admin,
+            // Bloques horarios
+            'ver-bloques-horarios'   => $todos,
+            'crear-bloques-horarios' => $admin,
+            'editar-bloques-horarios'=> $admin,
+            'borrar-bloques-horarios'=> $admin,
+            // Reservas
+            'ver-disponibilidad'     => $todos,
+            'ver-reservas'           => $todos,
+            'crear-reservas'         => $usuarios,
+            'editar-reservas'        => ['Administracion'],
+            'cancelar-reservas'      => $usuarios,
+            'reservar-aulas'         => ['Docente', 'Administracion'],
+
             // Mantenimiento (el celador reporta, administración corrige)
             'ver-mantenimientos'     => $staff,
             'crear-mantenimientos'   => $staff,

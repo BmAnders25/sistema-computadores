@@ -11,7 +11,9 @@ use App\Http\Controllers\RolController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\Auth\TwoFactorController;
-
+use App\Http\Controllers\AulaController;
+use App\Http\Controllers\BloqueHorarioController;
+use App\Http\Controllers\ReservaController;
 Auth::routes(['register' => false]);
 
 // Segundo factor: requiere sesión, pero NO el middleware two-factor (evita bucle)
@@ -43,7 +45,14 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
 
     Route::resource('computadores', ComputadorController::class)
         ->parameters(['computadores' => 'computador']);
-
+    Route::resource('aulas', AulaController::class);
+    Route::resource('bloques-horarios', BloqueHorarioController::class)->parameters([
+    'bloques-horarios' => 'bloqueHorario'
+]);
+    Route::resource('reservas', ReservaController::class);
+    Route::patch('/reservas/{reserva}/confirmar', [ReservaController::class, 'confirmarIngreso'])
+    ->name('reservas.confirmar')
+    ->middleware(['auth', 'role:Celador|Administracion']); 
     Route::resource('users', UserController::class);
     Route::resource('roles', RolController::class);
     Route::resource('permissions', PermissionController::class);

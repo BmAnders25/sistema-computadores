@@ -17,11 +17,64 @@ class ComputadorController extends Controller
         $this->middleware('permission:borrar-computadores', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Cargamos la relación 'aula' para optimizar consultas (Eager Loading)
-        $computadores = Computador::with('aula')->get();
-        return view('computadores.index', compact('computadores'));
+        $query = Computador::with('aula');
+        $search = trim((string) $request->query('search', ''));
+
+        if ($search !== '') {
+            $query->where(function ($query) use ($search) {
+                $like = '%' . $search . '%';
+                $query->where('marca', 'like', $like)
+                    ->orWhere('modelo', 'like', $like)
+                    ->orWhere('serial', 'like', $like)
+                    ->orWhere('procesador', 'like', $like)
+                    ->orWhere('sistema_operativo', 'like', $like)
+                    ->orWhereHas('aula', function ($aulas) use ($like) {
+                        $aulas->where('nombre', 'like', $like)
+                            ->orWhere('bloque', 'like', $like);
+                    });
+            });
+        }
+
+        $estado = $request->query('estado');
+        if ($estado === 'disponible') {
+            $query->where('estado', 'disponible');
+        } elseif ($estado === 'en_uso') {
+            $query->whereIn('estado', ['prestado', 'reservado']);
+        } elseif ($estado === 'mantenimiento') {
+            $query->where(function ($query) {
+                $query->where('estado', 'mantenimiento')
+                    ->orWhere('condicion', 'defectuoso');
+            });
+        }
+
+        $aulaId = $request->query('aula_id');
+        if (is_string($aulaId) && ctype_digit($aulaId)) {
+            $query->where('aula_id', (int) $aulaId);
+        }
+
+        $totalEquipos = Computador::count();
+        $disponibles = Computador::where('estado', 'disponible')->count();
+        $enUso = Computador::whereIn('estado', ['prestado', 'reservado'])->count();
+        $mantenimiento = Computador::where(function ($query) {
+            $query->where('estado', 'mantenimiento')
+                ->orWhere('condicion', 'defectuoso');
+        })->count();
+        $ubicaciones = Aula::orderBy('bloque')->orderBy('nombre')->get(['id', 'bloque', 'nombre']);
+
+        $computadores = $query->orderBy('marca')->orderBy('serial')
+            ->paginate($this->catalogPerPage($request))
+            ->withQueryString();
+
+        return view('computadores.index', compact(
+            'computadores',
+            'totalEquipos',
+            'disponibles',
+            'enUso',
+            'mantenimiento',
+            'ubicaciones'
+        ));
     }
 
     public function create()

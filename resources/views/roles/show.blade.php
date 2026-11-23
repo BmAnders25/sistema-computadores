@@ -1,70 +1,57 @@
 @extends('adminlte::page')
 
-@section('title', 'S.O.A.H')
+@section('title', 'Detalles del Rol')
 
 @section('content_header')
-<h1 class="m-0 text-dark">Detalles del Rol</h1>
+    <section class="src-catalog-detail-heading">
+        <nav aria-label="Migas de pan">
+            <a href="{{ route('home') }}">S.R.C</a><span aria-hidden="true">/</span>
+            <a href="{{ route('roles.index') }}">Seguridad</a><span aria-hidden="true">/</span>
+            <span aria-current="page">{{ $role->name }}</span>
+        </nav>
+        <div class="src-catalog-detail-title-row">
+            <h1>{{ $role->name }}</h1>
+            <div class="src-catalog-detail-actions">
+                @can('editar-roles')
+                    <a class="src-catalog-primary-action" href="{{ route('roles.edit', $role->id) }}"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Editar rol</a>
+                @endcan
+                <a class="src-catalog-secondary-action" href="{{ route('roles.index') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</a>
+            </div>
+        </div>
+    </section>
 @stop
 
 @section('content')
-<x-adminlte-card>
-    <div class="row">
-        <div class="col-md-5">
-            <x-adminlte-input name="name" label="Nombre Rol" placeholder="Nombre Rol" disabled :value="$role->name" />
-        </div>
-        <div class="col-md-9"></div> <!-- Columna vacía para ocupar espacio -->
-    </div>
+    @php
+        $roleUsersCount = $role->users()->count();
+        $rolePermissionsCount = count($rolePermissions);
+    @endphp
+    <div class="src-catalog-detail-layout">
+        <aside class="src-catalog-summary-card">
+            <span class="src-catalog-summary-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span>
+            <h2>{{ $role->name }}</h2>
+            <p>Perfil de acceso al sistema</p>
+            <div class="src-catalog-detail-rows">
+                <div class="src-catalog-detail-row"><span>Usuarios asignados</span><strong>{{ $roleUsersCount }}</strong></div>
+                <div class="src-catalog-detail-row"><span>Permisos asociados</span><strong>{{ $rolePermissionsCount }}</strong></div>
+            </div>
+        </aside>
 
-    <div class="row mt-3">
-        <div class="col-md-12">
-            <label for="checkPermisos" class="form-label">Permisos para este rol:</label>
-            <table class="table table-bordered table-striped">
-                <tbody>
-                    @foreach ($permission->chunk(4) as $chunk)
-                    <tr>
-                        @foreach ($chunk as $p)
-                        <td>
-                            <div class="form-check">
-                                <input name="permission[]" class="form-check-input" type="checkbox" value="{{ $p->id }}"
-                                       id="{{ $p->id }}" {{ in_array($p->id, $rolePermissions) ? 'checked' : '' }} disabled>
-                                <label class="form-check-label" for="{{ $p->id }}">
-                                    {{ $p->name }}
-                                </label>
-                            </div>
-                        </td>
-                        @endforeach
-
-                        {{-- Asegura que cada fila tenga exactamente 4 columnas --}}
-                        @for ($i = $chunk->count(); $i < 4; $i++)
-                            <td></td>
-                        @endfor
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div class="src-catalog-detail-main">
+            <section class="src-catalog-detail-card">
+                <header>
+                    <span class="src-catalog-detail-card-icon"><i class="fas fa-key" aria-hidden="true"></i></span>
+                    <h2>Permisos asignados ({{ $rolePermissionsCount }})</h2>
+                </header>
+                @include('roles._permission-groups', ['readOnly' => true, 'rolePermissions' => $rolePermissions])
+            </section>
+            <section class="src-catalog-detail-card">
+                <header>
+                    <span class="src-catalog-detail-card-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+                    <h2>Usuarios con este rol</h2>
+                </header>
+                <p class="src-catalog-card-note mb-0">{{ $roleUsersCount }} {{ \Illuminate\Support\Str::plural('usuario', $roleUsersCount) }} tiene{{ $roleUsersCount === 1 ? '' : 'n' }} asignado este perfil.</p>
+            </section>
         </div>
     </div>
-
-    <br>
-    <div class="row">
-        <div class="form-group col-md-6">
-            <a href="{{ route('roles.index') }}" class="btn btn-secondary mr-2"><i class="fas fa-undo"></i>
-                Regresar</a>
-        </div>
-    </div>
-</x-adminlte-card>
-
-@if (session('success'))
-<div class="alert alert-success">
-    {{ session('success') }}
-</div>
-@endif
-
 @stop
-
-@section('footer')
-    <footer>
-        <p><img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" width="4%" style="border-radius: 15px" alt="Logo S.O.AH"> © {{ date('Y') }} S.O.A.H.  Sistema De Organización y Administración Hotelera . Todos los derechos reservados.</p>
-    </footer>
-@stop
-

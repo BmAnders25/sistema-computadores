@@ -3,13 +3,17 @@
 @section('title', 'Editar Reserva')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Modificar Estado de la Reserva #{{ $reserva->id }}</h1>
+    <x-src-page-hero
+        eyebrow="Reservas"
+        title="Actualizar reserva"
+        description="Revisa los datos de la solicitud y actualiza su estado."
+        icon="fas fa-calendar-check" />
 @stop
 
 @section('content')
-    <x-adminlte-card shadow header-theme="warning" theme="warning">
+    <div class="src-form-page">
         @if ($errors->any())
-            <div class="alert alert-danger">
+            <div class="alert alert-danger" role="alert">
                 <ul class="mb-0">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -22,49 +26,43 @@
             @csrf
             @method('PUT')
 
-            <div class="row">
-                {{-- Información de lectura rápida --}}
-                <div class="col-md-12 mb-3">
-                    <div class="p-3 bg-light border rounded">
-                        <p class="mb-1"><strong>Usuario Solicitante:</strong> {{ $reserva->user->name ?? 'N/A' }}</p>
-                        <p class="mb-1"><strong>Fecha Programada:</strong> {{ \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y') }}</p>
-                        <p class="mb-0"><strong>Recurso:</strong> {{ $reserva->computador_id ? 'Computador ID: ' . $reserva->computador_id : 'Aula Completa' }}</p>
+            <section class="src-form-section">
+                <header class="src-form-section-heading">
+                    <span><i class="fas fa-receipt" aria-hidden="true"></i></span>
+                    <div><h2>Datos de la reserva #{{ $reserva->id }}</h2><p>Información asociada a esta solicitud.</p></div>
+                </header>
+                <div class="src-catalog-detail-rows">
+                    <div class="src-catalog-detail-row"><span>Usuario solicitante</span><strong>{{ $reserva->user->name ?? 'N/A' }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Fecha programada</span><strong>{{ \Illuminate\Support\Carbon::parse($reserva->fecha)->format('d/m/Y') }}</strong></div>
+                    <div class="src-catalog-detail-row src-catalog-field-full"><span>Recurso</span><strong>{{ $reserva->computador_id ? 'Computador ID: ' . $reserva->computador_id : 'Aula completa' }}</strong></div>
+                </div>
+            </section>
+
+            <section class="src-form-section">
+                <header class="src-form-section-heading">
+                    <span><i class="fas fa-exchange-alt" aria-hidden="true"></i></span>
+                    <div><h2>Estado de la reserva</h2><p>Selecciona el estado correspondiente al flujo de atención.</p></div>
+                </header>
+                <div class="src-form-grid">
+                    <div class="src-form-field src-form-field-full">
+                        <label for="estado">Estado de la reserva <span aria-hidden="true">*</span></label>
+                        <select name="estado" id="estado" class="src-form-control" required>
+                            <option value="pendiente" {{ old('estado', $reserva->estado) == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                            <option value="confirmada" {{ old('estado', $reserva->estado) == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
+                            <option value="entregada" {{ old('estado', $reserva->estado) == 'entregada' ? 'selected' : '' }}>Entregada</option>
+                            <option value="devuelta" {{ old('estado', $reserva->estado) == 'devuelta' ? 'selected' : '' }}>Devuelta</option>
+                            <option value="cancelada" {{ old('estado', $reserva->estado) == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
+                            <option value="no_show" {{ old('estado', $reserva->estado) == 'no_show' ? 'selected' : '' }}>No se presentó</option>
+                        </select>
+                        @error('estado')<span class="src-form-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="row">
-                {{-- Estado de la Reserva --}}
-                <div class="form-group col-md-6">
-                    <label for="estado" class="font-weight-bold">Estado de la Reserva</label>
-                    <select name="estado" id="estado" class="form-control" required>
-                        <option value="pendiente" {{ old('estado', $reserva->estado) == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                        <option value="entregada" {{ old('estado', $reserva->estado) == 'entregada' ? 'selected' : '' }}>Entregada</option>
-                        <option value="devuelta" {{ old('estado', $reserva->estado) == 'devuelta' ? 'selected' : '' }}>Devuelta</option>
-                        <option value="cancelada" {{ old('estado', $reserva->estado) == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
-                        <option value="no_show" {{ old('estado', $reserva->estado) == 'no_show' ? 'selected' : '' }}>No se presentó</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="row mt-3">
-                <div class="form-group col-md-6">
-                    <x-adminlte-button class="btn btn-warning text-white mr-2" type="submit" label="Actualizar Reserva" theme="warning"
-                        icon="fas fa-sync-alt" />
-                    <a href="{{ route('reservas.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-undo"></i> Regresar
-                    </a>
-                </div>
+            <div class="src-form-actions">
+                <button class="src-catalog-primary-action" type="submit"><i class="fas fa-check" aria-hidden="true"></i> Actualizar reserva</button>
+                <a class="src-catalog-secondary-action" href="{{ route('reservas.index') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</a>
             </div>
         </form>
-    </x-adminlte-card>
-@stop
-
-@section('footer')
-    <div style="max-height: 55px;" class="text-center text-muted">
-        <p>
-            <img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" alt="Logo UP" style="max-height: 70px; border-radius: 15px" class="mr-2"> 
-            © {{ date('Y') }} S.R.C - Sistema de Reserva de Computadores - Universidad de Pamplona Sede Villa del Rosario. Todos los derechos reservados.
-        </p>
     </div>
 @stop

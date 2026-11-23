@@ -1,33 +1,30 @@
 @extends('adminlte::page')
 
-@section('title', 'S.R.C.')
+@section('title', 'Crear Usuario')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Registrar usuario</h1>
+    <x-src-page-hero
+        eyebrow="Administración · Usuarios"
+        title="Crear usuario"
+        description="Registra una cuenta y configura su rol de acceso al sistema."
+        icon="fas fa-user-plus" />
 @stop
 
 @section('content')
     @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+        <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
     @endif
 
-    <x-adminlte-card>
+    <div class="src-form-page">
         <form method="POST" action="{{ route('users.store') }}">
             @csrf
+            <x-src-validation-errors />
             @include('users._campos')
 
-            <div class="row">
-                <div class="form-group col-md-6">
-                    <x-adminlte-button class="mr-2" type="submit" label="Guardar usuario" theme="primary" icon="fas fa-save" />
-                    <a href="{{ route('users.index') }}" class="btn btn-secondary"><i class="fas fa-undo"></i> Cancelar</a>
-                </div>
+            <div class="src-form-actions">
+                <button class="src-catalog-primary-action" type="submit"><i class="fas fa-check" aria-hidden="true"></i> Guardar usuario</button>
+                <a class="src-catalog-secondary-action" href="{{ route('users.index') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</a>
             </div>
         </form>
-    </x-adminlte-card>
-@stop
-
-@section('footer')
-    <footer>
-        <p>© {{ date('Y') }} S.R.C. Sistema de Reserva de Computadores · Universidad de Pamplona. Todos los derechos reservados.</p>
-    </footer>
+    </div>
 @stop

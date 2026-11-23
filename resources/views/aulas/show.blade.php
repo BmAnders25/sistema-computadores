@@ -3,156 +3,85 @@
 @section('title', 'Detalles del Aula / Laboratorio')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Detalles del Aula: {{ $aula->bloque }} - {{ $aula->nombre }}</h1>
+    <section class="src-catalog-detail-heading">
+        <nav aria-label="Migas de pan">
+            <a href="{{ route('home') }}">S.R.C</a><span aria-hidden="true">/</span>
+            <a href="{{ route('aulas.index') }}">Inventario</a><span aria-hidden="true">/</span>
+            <span aria-current="page">{{ $aula->nombre }}</span>
+        </nav>
+        <div class="src-catalog-detail-title-row">
+            <h1>{{ $aula->nombre }} · {{ $aula->bloque }}</h1>
+            <div class="src-catalog-detail-actions">
+                @can('editar-aulas')
+                    <a class="src-catalog-primary-action" href="{{ route('aulas.edit', $aula->id) }}"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Editar</a>
+                @endcan
+                <a class="src-catalog-secondary-action" href="{{ route('aulas.index') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</a>
+            </div>
+        </div>
+    </section>
 @stop
 
 @section('content')
-<div class="row">
-    {{-- Columna de Resumen General del Aula --}}
-    <div class="col-md-4">
-        <div class="card card-outline card-primary shadow">
-            <div class="card-header text-center">
-                <h3 class="card-title font-weight-bold"><i class="fas fa-door-open mr-1"></i> Ficha del Espacio</h3>
+    @php
+        $activa = in_array($aula->estado, ['activo', 'disponible'], true);
+        $estadoLabel = $activa ? 'Activa' : ($aula->estado === 'mantenimiento' ? 'Mantenimiento' : 'Inactiva');
+        $estadoClass = $activa ? 'active' : ($aula->estado === 'mantenimiento' ? 'pending' : 'inactive');
+    @endphp
+
+    <div class="src-catalog-detail-layout">
+        <aside class="src-catalog-summary-card">
+            <span class="src-catalog-summary-icon"><i class="fas fa-building" aria-hidden="true"></i></span>
+            <h2>{{ $aula->nombre }}</h2>
+            <p>{{ $aula->bloque }}</p>
+            <div class="src-computer-summary-badges">
+                <span class="src-catalog-status src-catalog-status-{{ $estadoClass }}"><span aria-hidden="true"></span>{{ $estadoLabel }}</span>
+                <span class="src-catalog-badge">{{ $aula->capacidad ? $aula->capacidad . ' estudiantes' : 'Capacidad no especificada' }}</span>
             </div>
-            <div class="card-body text-center bg-light">
-                <div class="mb-3">
-                    <i class="fas fa-building fa-5x text-primary"></i>
+            <div class="src-catalog-detail-rows">
+                <div class="src-catalog-detail-row"><span>Equipos asociados</span><strong>{{ $aula->computadores->count() }}</strong></div>
+                <div class="src-catalog-detail-row"><span>Reservas registradas</span><strong>{{ $aula->reservas->count() }}</strong></div>
+            </div>
+        </aside>
+
+        <div class="src-catalog-detail-main">
+            <section class="src-catalog-detail-card">
+                <header>
+                    <span class="src-catalog-detail-card-icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+                    <h2>Información del espacio</h2>
+                </header>
+                <div class="src-catalog-detail-rows">
+                    <div class="src-catalog-detail-row"><span>Bloque</span><strong>{{ $aula->bloque }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Laboratorio / Aula</span><strong>{{ $aula->nombre }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Capacidad</span><strong>{{ $aula->capacidad ? $aula->capacidad . ' estudiantes' : 'No especificada' }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Estado operativo</span><strong>{{ $estadoLabel }}</strong></div>
                 </div>
-                <h4 class="font-weight-bold text-dark mb-1">{{ $aula->nombre }}</h4>
-                <p class="text-muted mb-2">{{ $aula->bloque }}</p>
-                <span class="badge badge-secondary text-uppercase px-3 py-1 mb-3">
-                    Capacidad: {{ $aula->capacidad ?? 'N/A' }} personas
-                </span>
+            </section>
 
-                <hr>
-
-                <div class="text-left">
-                    <label class="text-muted small mb-1 d-block"><i class="fas fa-desktop mr-1"></i> Total Equipos Vinculados:</label>
-                    <span class="badge badge-info p-2 d-block font-weight-bold">
-                        {{ $aula->computadores->count() }} computadores registrados
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Columna de Bloques de Información (Info Boxes) --}}
-    <div class="col-md-8">
-        <div class="row">
-            {{-- Bloque --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Bloque" 
-                    text="{{ $aula->bloque }}" 
-                    icon="fas fa-building" 
-                    theme="navy"/>
-            </div>
-
-            {{-- Nombre del Laboratorio --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Nombre / Aula" 
-                    text="{{ $aula->nombre }}" 
-                    icon="fas fa-door-open" 
-                    theme="purple"/>
-            </div>
-        </div>
-
-        <div class="row">
-            {{-- Capacidad --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Capacidad Estudiantil" 
-                    text="{{ $aula->capacidad ? $aula->capacidad . ' estudiantes' : 'No especificada' }}" 
-                    icon="fas fa-users" 
-                    theme="teal"/>
-            </div>
-
-            {{-- Estado (Dinámico) --}}
-            <div class="col-md-6">
-                @php
-                    $estadoTexto = ucfirst($aula->estado);
-                    switch ($aula->estado) {
-                        case 'activo':
-                        case 'disponible':
-                            $iconEstado = 'fas fa-check-circle';
-                            $themeEstado = 'success';
-                            break;
-                        case 'mantenimiento':
-                            $iconEstado = 'fas fa-tools';
-                            $themeEstado = 'warning';
-                            break;
-                        default:
-                            $iconEstado = 'fas fa-ban';
-                            $themeEstado = 'danger';
-                            break;
-                    }
-                @endphp
-
-                <x-adminlte-info-box 
-                    title="Estado del Espacio" 
-                    text="{{ $estadoTexto }}"
-                    icon="{{ $iconEstado }}" 
-                    theme="{{ $themeEstado }}" 
-                />
-            </div>
-        </div>
-
-        {{-- Listado rápido de equipos vinculados a este laboratorio --}}
-        <div class="row mt-2">
-            <div class="col-md-12">
-                <div class="card card-outline card-secondary shadow-sm">
-                    <div class="card-header">
-                        <h3 class="card-title font-weight-bold"><i class="fas fa-laptop mr-1"></i> Computadores en este Laboratorio</h3>
+            <section class="src-catalog-detail-card">
+                <header>
+                    <span class="src-catalog-detail-card-icon"><i class="fas fa-desktop" aria-hidden="true"></i></span>
+                    <h2>Computadores asociados ({{ $aula->computadores->count() }})</h2>
+                </header>
+                @if ($aula->computadores->isNotEmpty())
+                    <div class="table-responsive">
+                        <table class="src-catalog-detail-table">
+                            <thead><tr><th>Equipo</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach ($aula->computadores as $computador)
+                                    <tr>
+                                        <td><strong>{{ $computador->marca }} {{ $computador->modelo }}</strong><br><small class="text-muted">{{ $computador->serial }}</small></td>
+                                        <td>{{ ucfirst(str_replace('_', ' ', $computador->tipo_equipo)) }}</td>
+                                        <td>{{ ucfirst($computador->estado) }}</td>
+                                        <td><a href="{{ route('computadores.show', $computador->id) }}" aria-label="Ver computador {{ $computador->serial }}"><i class="far fa-eye" aria-hidden="true"></i></a></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="card-body p-0">
-                        @if($aula->computadores->count() > 0)
-                            <table class="table table-striped mb-0">
-                               <thead>
-                                   <tr>
-                                       <th>Serial</th>
-                                       <th>Marca / Modelo</th>
-                                       <th>Tipo</th>
-                                       <th>Estado</th>
-                                   </tr>
-                               </thead>
-                               <tbody>
-                                   @foreach($aula->computadores as $comp)
-                                   <tr>
-                                       <td><strong>{{ $comp->serial }}</strong></td>
-                                       <td>{{ $comp->marca }} {{ $comp->modelo }}</td>
-                                       <td><span class="badge bg-secondary">{{ ucfirst($comp->tipo_equipo) }}</span></td>
-                                       <td>
-                                           @if($comp->estado == 'disponible')
-                                               <span class="badge bg-success">Disponible</span>
-                                           @else
-                                               <span class="badge bg-warning">{{ ucfirst($comp->estado) }}</span>
-                                           @endif
-                                       </td>
-                                   </tr>
-                                   @endforeach
-                               </tbody>
-                            </table>
-                        @else
-                            <p class="text-center text-muted p-3 mb-0">No hay equipos de cómputo vinculados a esta aula actualmente.</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
+                @else
+                    <p class="src-catalog-card-note mb-0">No hay computadores vinculados actualmente a este espacio.</p>
+                @endif
+            </section>
         </div>
-    </div>
-</div>
-
-{{-- Botones de Acción --}}
-<div class="mt-3 d-flex justify-content-between">
-    <a href="{{ route('aulas.index') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Regresar
-    </a>
-</div>
-@stop
-
-@section('footer')
-    <div style="max-height: 55px;" class="text-center text-muted">
-        <p>
-            <img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" alt="Logo UP" style="max-height: 70px; border-radius: 15px" class="mr-2"> 
-            © {{ date('Y') }} S.R.C - Sistema de Reserva de Computadores - Universidad de Pamplona Sede Villa del Rosario. Todos los derechos reservados.
-        </p>
     </div>
 @stop

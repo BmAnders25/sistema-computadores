@@ -65,3 +65,13 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 # sistema-computadores
+
+## Recordatorios automáticos de reservas
+
+El comando `php artisan reservas:recordatorios` está programado cada cinco minutos.
+En desarrollo local, ejecuta el scheduler con `php artisan schedule:work`. En producción,
+configura el cron de Laravel para ejecutar `php artisan schedule:run` cada minuto.
+
+Los recordatorios envían correo y notificación interna únicamente a usuarios activos.
+Si usas Mailtrap, ten presente que su plan gratuito limita la cantidad de correos; prueba
+con dos o tres reservas creadas manualmente y no con el seeder de demostración.

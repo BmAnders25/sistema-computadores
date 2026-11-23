@@ -31,7 +31,7 @@ class ReservaService
             if (!in_array(strtolower($aula->estado), ['activa', 'activo'], true)) {
                 $this->fallar('El aula de este equipo no está habilitada.');
             }
-            if (in_array($computador->estado, ['mantenimiento', 'inactivo'], true)) {
+            if ($computador->estado !== 'disponible') {
                 $this->fallar('Este equipo no está disponible para reservas.');
             }
 
@@ -94,15 +94,15 @@ class ReservaService
 
     public function cancelar(User $user, Reserva $reserva): void
     {
-        $esAdmin = $user->hasRole('Administracion');
+        $esPersonal = $user->hasAnyRole(['Administracion', 'Celador']);
 
-        abort_unless($esAdmin || $reserva->user_id === $user->id, 403);
+        abort_unless($esPersonal || $reserva->user_id === $user->id, 403);
 
         if ($reserva->estado !== 'pendiente') {
             $this->fallar('Solo se pueden cancelar reservas pendientes.');
         }
 
-        if (!$esAdmin) {
+        if (!$esPersonal) {
             $minutosMin = config('reservas.minutos_min_cancelacion', 30);
             $limite = $reserva->bloque
                 ->inicioEn($reserva->fecha->toDateString())
@@ -114,6 +114,21 @@ class ReservaService
         }
 
         $reserva->liberar('cancelada');
+    }
+
+    public function aprobar(User $user, Reserva $reserva): void
+    {
+        abort_unless($user->hasAnyRole(['Administracion', 'Celador']), 403);
+
+        DB::transaction(function () use ($reserva) {
+            $reserva = Reserva::query()->lockForUpdate()->findOrFail($reserva->id);
+
+            if ($reserva->estado !== 'pendiente') {
+                $this->fallar('Solo se pueden confirmar reservas pendientes.');
+            }
+
+            $reserva->update(['estado' => 'confirmada']);
+        });
     }
 
     // ----- Validaciones internas -----

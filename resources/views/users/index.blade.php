@@ -3,128 +3,136 @@
 @section('title', 'Usuarios')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">
-        Administración de Usuarios</h1>
+    <x-src-page-hero
+        eyebrow="Administración"
+        title="Usuarios"
+        description="Gestiona las cuentas, los roles y el estado de acceso de la comunidad."
+        icon="fas fa-users" />
 @stop
 
 @section('content')
-    <x-adminlte-card>
-        @can('crear-usuarios')
-            <a class="btn btn-primary mr-2" href="{{ route('users.create') }}" role="button"><i class="fa fa-plus"></i> Nuevo
-                Usuario</a>
-        @endcan
-        <div class="card-body">
-            @php
-                $config['language'] = ['url' => asset('vendor/datatables/es-CO.json')];
-                //$config['paging'] = true;
-                //$config['lengthMenu'] = [10, 50, 100, 500];
-            @endphp
-            <x-adminlte-datatable id="table1" :heads="['Id', 'Código', 'Nombre', 'Email', 'Rol', 'Estado', 'Acciones']" head-theme="dark" :config=$config striped hoverable
-                with-buttons>
-                @foreach ($users as $user)
-                    <tr>
-                        <td>{{ $user->id }}</td>
-                        {{-- Se amplían las opciones por si tu columna se llama de otra forma en la BD --}}
-                       <td>{{ $user->codigo_institucional ?? 'N/A' }}</td>
-                        <td>{{ $user->name }}</td>
-                        <td>{{ $user->email }}</td>
-                        <td>
-                            @if (!empty($user->getRoleNames()))
-                                @foreach ($user->getRoleNames() as $rolNombre)
-                                    @php
-                                        $badgeColor = 'secondary';
-                                        if (strtolower($rolNombre) == 'administrador' || strtolower($rolNombre) == 'admin') {
-                                            $badgeColor = 'danger';
-                                        } elseif (strtolower($rolNombre) == 'docente' || strtolower($rolNombre) == 'profesor') {
-                                            $badgeColor = 'primary';
-                                        } elseif (strtolower($rolNombre) == 'estudiante') {
-                                            $badgeColor = 'success';
-                                        }
-                                    @endphp
-                                    <h5><span class="badge badge-{{ $badgeColor }}">{{ $rolNombre }}</span></h5>
-                                @endforeach
-                            @endif
-                        </td>
-                        <td>
-                            {{-- Envuelto en <h5> para igualar exactamente el tamaño y padding del rol --}}
-                            @php
-                                $estadoActivo = method_exists($user, 'esActivo') ? $user->esActivo() : ($user->estado ?? true);
-                            @endphp
-
-                            @if ($estadoActivo)
-                                <h5><span class="badge badge-success">Activo</span></h5>
-                            @else
-                                <h5><span class="badge badge-warning">Suspendido</span></h5>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="d-flex" role="group">
-                                <a class="btn btn-info btn-sm mr-1" href="{{ route('users.show', $user->id) }}" role="button" title="Ver">
-                                    <i class="far fa-eye fa-fw"></i>
-                                </a>
-                                @can('editar-usuarios')
-                                    <a class="btn btn-success btn-sm mr-1" href="{{ route('users.edit', $user->id) }}" role="button" title="Editar">
-                                        <i class="fas fa-pencil-alt fa-fw"></i>
-                                    </a>
-                                @endcan
-                                @can('borrar-usuarios')
-                                    <form method="POST" action="{{ route('users.destroy', $user->id) }}" style="display: inline;" class="delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-warning btn-sm delete-button" title="Eliminar">
-                                            <i class="far fa-trash-alt fa-fw"></i>
-                                        </button>
-                                    </form>
-                                @endcan
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-            </x-adminlte-datatable>
-        </div>
-    </x-adminlte-card>
-@stop
-
-@section('footer')
-    <div style="max-height: 55px;" class="text-center text-muted">
-        <p>
-            <img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" alt="Logo UP" style="max-height: 70px; border-radius: 15px" class="mr-2"> 
-            © {{ date('Y') }} S.R.C - Sistema de Reserva de Computadores - Universidad de Pamplona Sede Villa del Rosario. Todos los derechos reservados.
-        </p>
-    </div>
-@stop
-@section('js')
-
+    @if (session('error'))
+        <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+    @endif
     @if ($message = Session::get('success'))
-        <script>
-            Swal.fire({
-                title: "Operación Exitosa!",
-                text: "{{ $message }}",
-                timer: 2000,
-                icon: "success"
-            });
-        </script>
+        <div class="alert alert-success" role="status">{{ $message }}</div>
     @endif
 
-    <script>
-        var deleteButtons = document.querySelectorAll('.delete-button');
-        deleteButtons.forEach(function(button) {
-            button.addEventListener('click', function() {
-                var form = this.parentElement;
-                Swal.fire({
-                    title: "¿Estás seguro de Eliminar este Usuario?",
-                    text: "¡No se podrá recuperar la información!",
-                    icon: "error",
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: "¡Sí, Eliminar!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                })
-            });
-        });
-    </script>
+    @php
+        $catalogHeaders = ['Nombre', 'Correo', 'Código institucional', 'Rol', 'Estado', 'Programa'];
+    @endphp
+
+    <div class="src-catalog-page" data-catalog-page data-catalog-title="Usuarios · S.R.C" data-catalog-filename="usuarios">
+        <div class="src-catalog-kpis">
+            <article class="src-catalog-kpi">
+                <span class="src-catalog-kpi-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+                <div><small>Total de usuarios</small><strong>{{ $totalUsuarios }}</strong></div>
+            </article>
+            <article class="src-catalog-kpi src-catalog-kpi-positive">
+                <span class="src-catalog-kpi-icon"><i class="fas fa-user-check" aria-hidden="true"></i></span>
+                <div><small>Activos</small><strong>{{ $usuariosActivos }}</strong></div>
+            </article>
+            <article class="src-catalog-kpi src-catalog-kpi-neutral">
+                <span class="src-catalog-kpi-icon"><i class="fas fa-user-slash" aria-hidden="true"></i></span>
+                <div><small>Inactivos / suspendidos</small><strong>{{ $usuariosInactivos }}</strong></div>
+            </article>
+        </div>
+
+        <div class="src-catalog-create-row">
+            @can('crear-usuarios')
+                <a class="src-catalog-create-button" href="{{ route('users.create') }}"><i class="fas fa-plus" aria-hidden="true"></i> Nuevo Usuario</a>
+            @endcan
+        </div>
+
+        <x-src-catalog-toolbar :filters="[
+            ['label' => 'Todos', 'value' => 'all', 'query' => '', 'count' => $totalUsuarios],
+            ['label' => 'Activos', 'value' => 'active', 'query' => 'activo', 'count' => $usuariosActivos],
+            ['label' => 'Inactivos / suspendidos', 'value' => 'inactive', 'query' => 'inactivos', 'count' => $usuariosInactivos],
+        ]" :selected-filter="request()->query('estado', '')" search-placeholder="Buscar por nombre, correo, código o rol...">
+        </x-src-catalog-toolbar>
+
+        <section class="src-catalog-grid" data-catalog-grid data-catalog-headers="{{ json_encode($catalogHeaders) }}" aria-label="Usuarios registrados">
+            @forelse ($users as $user)
+                @php
+                    $isActive = $user->esActivo();
+                    $estadoLabel = $isActive ? 'Activo' : ($user->estado === 'suspendido' ? 'Suspendido' : 'Inactivo');
+                    $filterStatus = $isActive ? 'active' : 'inactive';
+                    $rolesUsuario = $user->getRoleNames()->implode(', ');
+                    $nombrePartes = preg_split('/\s+/', trim($user->name), -1, PREG_SPLIT_NO_EMPTY);
+                    $initials = collect($nombrePartes)->take(2)->map(fn ($parte) => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($parte, 0, 1)))->implode('');
+                    $searchText = \Illuminate\Support\Str::lower(implode(' ', [$user->name, $user->email, $user->codigo_institucional, $rolesUsuario, $user->programa]));
+                    $catalogRecord = [$user->name, $user->email, $user->codigo_institucional ?? 'N/A', $rolesUsuario ?: 'Sin rol', $estadoLabel, $user->programa ?? 'N/A'];
+                @endphp
+                <article
+                    class="src-catalog-card src-user-card"
+                    data-catalog-card
+                    data-catalog-status="{{ $filterStatus }}"
+                    data-catalog-search="{{ $searchText }}"
+                    data-catalog-record="{{ json_encode($catalogRecord, JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP) }}"
+                >
+                    <header class="src-catalog-card-header">
+                        <div class="src-user-identity">
+                            <span class="src-user-avatar" aria-hidden="true">{{ $initials }}</span>
+                            <div>
+                                <h2>{{ $user->name }}</h2>
+                                <p>{{ $user->email }}</p>
+                            </div>
+                        </div>
+                        <span class="src-catalog-status src-catalog-status-{{ $isActive ? 'active' : 'inactive' }}"><span aria-hidden="true"></span>{{ $estadoLabel }}</span>
+                    </header>
+
+                    <div class="src-catalog-card-body">
+                        <div class="src-catalog-facts">
+                            <div class="src-catalog-fact"><span>Rol</span><strong>{{ $rolesUsuario ?: 'Sin rol asignado' }}</strong></div>
+                            <div class="src-catalog-fact"><span>Código institucional</span><strong>{{ $user->codigo_institucional ?: 'No registrado' }}</strong></div>
+                            <div class="src-catalog-fact"><span>Programa académico</span><strong>{{ $user->programa ?: 'No registrado' }}</strong></div>
+                        </div>
+                    </div>
+
+                    <footer class="src-catalog-card-footer">
+                        <span class="src-catalog-card-note"><i class="fas fa-user-tag mr-1" aria-hidden="true"></i> {{ $rolesUsuario ?: 'Sin rol asignado' }}</span>
+                        <div class="src-catalog-actions">
+                            <a href="{{ route('users.show', $user->id) }}"><i class="far fa-eye" aria-hidden="true"></i> Ver</a>
+                            @can('editar-usuarios')
+                                <a class="src-catalog-edit" href="{{ route('users.edit', $user->id) }}"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Editar</a>
+                            @endcan
+                            @can('borrar-usuarios')
+                                <form method="POST" action="{{ route('users.destroy', $user->id) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="button"
+                                        class="src-catalog-delete"
+                                        data-catalog-delete
+                                        data-confirm-title="¿Eliminar este usuario?"
+                                        data-confirm-text="No se podrá recuperar la información de la cuenta."
+                                        data-confirm-button="Sí, eliminar"
+                                    ><i class="far fa-trash-alt" aria-hidden="true"></i> Eliminar</button>
+                                </form>
+                            @endcan
+                        </div>
+                    </footer>
+                </article>
+            @empty
+                <div class="src-catalog-empty">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                    <strong>No hay usuarios registrados</strong>
+                    <span>Las cuentas aparecerán aquí una vez creadas.</span>
+                </div>
+            @endforelse
+
+            @if ($users->isNotEmpty())
+                <div class="src-catalog-empty" data-catalog-filter-empty hidden>
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <strong>No encontramos usuarios</strong>
+                    <span>Ajusta el filtro o la búsqueda e inténtalo de nuevo.</span>
+                </div>
+            @endif
+        </section>
+        <x-src-pagination :items="$users" />
+    </div>
+@stop
+
+@section('js')
+    <script src="{{ asset('js/src-catalog.js') }}"></script>
 @stop

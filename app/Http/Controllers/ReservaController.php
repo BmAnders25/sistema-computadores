@@ -6,14 +6,19 @@ use App\Models\Reserva;
 use App\Models\Aula;
 use App\Models\Computador;
 use App\Models\BloqueHorario;
+use App\Notifications\ConfirmacionReserva;
+use App\Notifications\RecordatorioInicioReserva;
 use App\Services\ReservaService;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class ReservaController extends Controller
 {
-    protected $reservaService;
+    protected ReservaService $reservaService;
 
     public function __construct(ReservaService $reservaService)
     {
@@ -25,31 +30,95 @@ class ReservaController extends Controller
         $this->middleware('permission:cancelar-reservas', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
         // Si es Administración o Celador, ven todas las reservas; si es Estudiante/Docente, solo las suyas.
         if ($user->hasRole(['Administracion', 'Celador'])) {
-            $reservas = Reserva::with(['user', 'aula', 'computador.aula', 'bloque'])->latest()->get();
+            $baseQuery = Reserva::query();
         } else {
-            $reservas = Reserva::with(['user', 'aula', 'computador.aula', 'bloque'])
-                ->where('user_id', $user->id)
-                ->latest()
-                ->get();
+            $baseQuery = Reserva::query()->where('user_id', $user->id);
         }
 
-        return view('reservas.index', compact('reservas'));
+        $totalReservas = (clone $baseQuery)->count();
+        $pendientesCount = (clone $baseQuery)->where('estado', 'pendiente')->count();
+        $confirmadasCount = (clone $baseQuery)->where('estado', 'confirmada')->count();
+        $enUsoCount = (clone $baseQuery)->where('estado', 'entregada')->count();
+        $historialCount = (clone $baseQuery)->whereIn('estado', ['devuelta', 'cancelada', 'no_show'])->count();
+
+        $query = (clone $baseQuery)->with(['user.roles', 'aula', 'computador.aula', 'bloque']);
+        $estado = $request->query('estado');
+        if (in_array($estado, ['pendiente', 'confirmada', 'entregada'], true)) {
+            $query->where('estado', $estado);
+        } elseif ($estado === 'historial') {
+            $query->whereIn('estado', ['devuelta', 'cancelada', 'no_show']);
+        }
+
+        $search = trim((string) $request->query('search', ''));
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $query->where(function ($query) use ($like) {
+                $query->whereHas('user', function ($users) use ($like) {
+                    $users->where('name', 'like', $like)
+                        ->orWhere('email', 'like', $like);
+                })->orWhereHas('computador', function ($computadores) use ($like) {
+                    $computadores->where('marca', 'like', $like)
+                        ->orWhere('modelo', 'like', $like)
+                        ->orWhere('serial', 'like', $like)
+                        ->orWhereHas('aula', function ($aulas) use ($like) {
+                            $aulas->where('nombre', 'like', $like)
+                                ->orWhere('bloque', 'like', $like);
+                        });
+                })->orWhereHas('aula', function ($aulas) use ($like) {
+                    $aulas->where('nombre', 'like', $like)
+                        ->orWhere('bloque', 'like', $like);
+                })->orWhereHas('bloque', function ($bloques) use ($like) {
+                    $bloques->where('nombre', 'like', $like)
+                        ->orWhere('hora_inicio', 'like', $like)
+                        ->orWhere('hora_fin', 'like', $like);
+                });
+            });
+        }
+
+        $reservas = $query->with(['user.roles', 'aula', 'computador.aula', 'bloque'])
+            ->latest()
+            ->paginate($this->catalogPerPage($request))
+            ->withQueryString();
+
+        return view('reservas.index', compact(
+            'reservas',
+            'totalReservas',
+            'pendientesCount',
+            'confirmadasCount',
+            'enUsoCount',
+            'historialCount'
+        ));
     }
 
     public function create(Request $request)
     {
         $tipo = $request->get('tipo', 'equipo'); // 'equipo' o 'aula'
-        $aulas = Aula::where('estado', 'activa')->get();
+        $computadorId = $request->query('computador_id');
+        $fecha = $request->query('fecha');
+        $bloqueHorarioId = $request->query('bloque_horario_id');
+        $fechaInicio = $request->query('fecha_inicio');
+        $fechaFin = $request->query('fecha_fin');
+        $aulas = Aula::whereIn('estado', ['activo', 'activa'])->get();
         $computadores = Computador::with('aula')->where('estado', 'disponible')->get();
         $bloques = BloqueHorario::where('activo', true)->get();
 
-        return view('reservas.create', compact('tipo', 'aulas', 'computadores', 'bloques'));
+        return view('reservas.create', compact(
+            'tipo',
+            'aulas',
+            'computadores',
+            'bloques',
+            'computadorId',
+            'fecha',
+            'bloqueHorarioId',
+            'fechaInicio',
+            'fechaFin'
+        ));
     }
 
     public function store(Request $request)
@@ -70,13 +139,66 @@ class ReservaController extends Controller
                 if (!$user->can('reservar-aulas')) {
                     throw ValidationException::withMessages(['reserva' => 'No tienes permisos para reservar aulas completas.']);
                 }
-                $this->reservaService->reservarAula($user, $request->aula_id, $request->fecha, $request->bloque_horario_id);
+                $reserva = $this->reservaService->reservarAula($user, $request->aula_id, $request->fecha, $request->bloque_horario_id);
             } else {
-                $this->reservaService->reservarEquipo($user, $request->computador_id, $request->fecha, $request->bloque_horario_id);
+                $reserva = $this->reservaService->reservarEquipo($user, $request->computador_id, $request->fecha, $request->bloque_horario_id);
             }
 
-            return redirect()->route('reservas.index')
+            $notificacionFallida = false;
+            try {
+                $user->notify(new ConfirmacionReserva($reserva));
+            } catch (Throwable $exception) {
+                $notificacionFallida = true;
+                Log::warning('La reserva se guardó, pero no se pudo enviar su correo de confirmación.', [
+                    'reserva_id' => $reserva->getKey(),
+                    'user_id' => $user->getKey(),
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+
+            $reserva->loadMissing(['bloque', 'computador', 'aula']);
+            $ahora = Carbon::now(config('app.timezone'));
+            $inicio = Carbon::parse(
+                $reserva->fecha->toDateString() . ' ' . $reserva->bloque->hora_inicio,
+                config('app.timezone')
+            );
+
+            if ($reserva->estado === 'pendiente'
+                && $inicio->greaterThan($ahora)
+                && $inicio->lessThan($ahora->copy()->addMinutes(30))) {
+                $marca = Carbon::now(config('app.timezone'));
+                $actualizadas = Reserva::query()
+                    ->whereKey($reserva->getKey())
+                    ->whereNull('recordatorio_inicio_enviado_at')
+                    ->update(['recordatorio_inicio_enviado_at' => $marca]);
+
+                if ($actualizadas === 1) {
+                    try {
+                        $user->notify(new RecordatorioInicioReserva($reserva));
+                    } catch (Throwable $exception) {
+                        $notificacionFallida = true;
+                        Reserva::query()
+                            ->whereKey($reserva->getKey())
+                            ->where('recordatorio_inicio_enviado_at', $marca)
+                            ->update(['recordatorio_inicio_enviado_at' => null]);
+
+                        Log::warning('La reserva se guardó, pero no se pudo enviar su recordatorio de inicio.', [
+                            'reserva_id' => $reserva->getKey(),
+                            'user_id' => $user->getKey(),
+                            'error' => $exception->getMessage(),
+                        ]);
+                    }
+                }
+            }
+
+            $respuesta = redirect()->route('reservas.index')
                 ->with('success', '¡Reserva registrada con éxito!');
+
+            if ($notificacionFallida) {
+                $respuesta->with('warning', 'La reserva se guardó, pero no se pudieron enviar todas las notificaciones.');
+            }
+
+            return $respuesta;
 
         } catch (ValidationException $e) {
             return redirect()->back()
@@ -111,7 +233,7 @@ class ReservaController extends Controller
     public function update(Request $request, Reserva $reserva)
     {
         $request->validate([
-            'estado' => 'required|in:pendiente,completada,cancelada',
+            'estado' => 'required|in:pendiente,confirmada,entregada,devuelta,cancelada,no_show',
         ]);
 
         $reserva->update([
@@ -135,18 +257,9 @@ class ReservaController extends Controller
     }
 
     public function confirmarIngreso(Reserva $reserva)
-{
-    
-    abort_unless(auth()->user()->hasAnyRole(['Celador', 'Administracion']), 403);
+    {
+        $this->reservaService->aprobar(auth()->user(), $reserva);
 
-    if ($reserva->estado !== 'pendiente') {
-        return back()->with('error', 'Solo se pueden confirmar reservas pendientes.');
+        return back()->with('success', 'Reserva confirmada correctamente.');
     }
-
-    $reserva->update([
-        'estado' => 'entregada'
-    ]);
-
-    return back()->with('success', '¡Ingreso confirmado con éxito!');
-}
 }

@@ -1,168 +1,379 @@
 @extends('adminlte::page')
 
-@section('title', 'Gestión de Reservas')
+@section('title', 'Mis reservas')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Listado de Reservas</h1>
+    <section class="src-reservations-hero">
+        <div>
+            <span class="src-availability-eyebrow">TU ACTIVIDAD</span>
+            <h2>Tus reservas, en un solo lugar</h2>
+            <p>Revisa el estado, el horario y la ubicación de tus equipos.</p>
+        </div>
+        <div class="src-reservations-hero-actions">
+            @can('crear-reservas')
+                <a class="src-reservation-new-button" href="{{ route('reservas.create') }}">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    Nueva reserva
+                </a>
+            @endcan
+            <div class="src-availability-hero-icon" aria-hidden="true">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+        </div>
+    </section>
 @stop
 
 @section('content')
-    <x-adminlte-card title="Historial y Reservas Activas" theme="primary" theme-mode="outline">
-        @can('crear-reservas')
-            <a class="btn btn-primary mb-3" href="{{ route('reservas.create') }}">
-                <i class="fa fa-plus-circle mr-1"></i> Nueva Reserva
-            </a>
-        @endcan
+    @php
+        $selectedEstado = request()->query('estado', '');
+    @endphp
 
-        @php
-            $heads = [
-                'ID',
-                'Usuario',
-                'Tipo / Destino',
-                'Fecha',
-                'Bloque Horario',
-                'Clave Única',
-                'Estado',
-                'Acciones'
-            ];
-            $config['language'] = ['url' => asset('vendor/datatables/es-CO.json')];
-        @endphp
+    <div class="src-reservations-page">
+        @if ($message = Session::get('success'))
+            <div class="alert alert-success" role="status">{{ $message }}</div>
+        @endif
+        @if ($message = Session::get('error'))
+            <div class="alert alert-danger" role="alert">{{ $message }}</div>
+        @endif
+        @if ($message = Session::get('warning'))
+            <div class="alert alert-warning" role="alert">{{ $message }}</div>
+        @endif
 
-        <x-adminlte-datatable id="reservasTable" :heads="$heads" head-theme="dark"
-            :config="$config" striped hoverable with-buttons responsive>
+        <div class="src-reservations-heading">
+            <h3>Historial de reservas</h3>
+        </div>
 
-            @foreach ($reservas as $reserva)
-                <tr>
-                    <td>{{ $reserva->id }}</td>
-                    <td><strong>{{ $reserva->user->name ?? 'N/A' }}</strong></td>
-                    <td>
-                        @if($reserva->computador_id)
-                            <span class="badge bg-info">Computador #{{ $reserva->computador_id }}</span>
-                            <div class="small text-muted">Serial: {{ $reserva->computador->serial ?? 'N/A' }}</div>
-                        @else
-                            <span class="badge bg-purple">Aula Completa</span>
-                            <div class="small text-muted">{{ $reserva->aula->nombre ?? 'N/A' }}</div>
-                        @endif
-                    </td>
-                    <td>{{ \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y') }}</td>
-                    <td>
-                        <div><strong>{{ $reserva->bloque->nombre ?? 'N/A' }}</strong></div>
-                        <span class="small text-muted">
-                            <i class="far fa-clock"></i> {{ $reserva->bloque->hora_inicio ?? '' }} - {{ $reserva->bloque->hora_fin ?? '' }}
+        <form class="src-reservations-toolbar" aria-label="Controles del historial" action="{{ url()->current() }}" method="GET" data-reservation-server-form>
+            @foreach (request()->except(['estado', 'search', 'page']) as $key => $value)
+                @if (is_array($value))
+                    @foreach ($value as $nestedKey => $nestedValue)
+                        <input type="hidden" name="{{ $key }}[{{ $nestedKey }}]" value="{{ $nestedValue }}">
+                    @endforeach
+                @else
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endif
+            @endforeach
+            <input type="hidden" name="estado" value="{{ $selectedEstado }}" data-reservation-state>
+            <div class="src-reservation-tabs" role="group" aria-label="Filtrar por estado">
+                <button type="button" class="src-reservation-tab {{ $selectedEstado === '' ? 'is-active' : '' }}" data-reservation-filter="all" data-reservation-query-value="" aria-pressed="{{ $selectedEstado === '' ? 'true' : 'false' }}">
+                    Todas <span>{{ $totalReservas }}</span>
+                </button>
+                <button type="button" class="src-reservation-tab {{ $selectedEstado === 'pendiente' ? 'is-active' : '' }}" data-reservation-filter="pending" data-reservation-query-value="pendiente" aria-pressed="{{ $selectedEstado === 'pendiente' ? 'true' : 'false' }}">
+                    Pendientes <span class="src-reservation-tab-count-pending">{{ $pendientesCount }}</span>
+                </button>
+                <button type="button" class="src-reservation-tab {{ $selectedEstado === 'confirmada' ? 'is-active' : '' }}" data-reservation-filter="confirmed" data-reservation-query-value="confirmada" aria-pressed="{{ $selectedEstado === 'confirmada' ? 'true' : 'false' }}">
+                    Confirmadas <span>{{ $confirmadasCount }}</span>
+                </button>
+                <button type="button" class="src-reservation-tab {{ $selectedEstado === 'entregada' ? 'is-active' : '' }}" data-reservation-filter="in-use" data-reservation-query-value="entregada" aria-pressed="{{ $selectedEstado === 'entregada' ? 'true' : 'false' }}">
+                    En uso <span>{{ $enUsoCount }}</span>
+                </button>
+                <button type="button" class="src-reservation-tab {{ $selectedEstado === 'historial' ? 'is-active' : '' }}" data-reservation-filter="history" data-reservation-query-value="historial" aria-pressed="{{ $selectedEstado === 'historial' ? 'true' : 'false' }}">
+                    Historial <span>{{ $historialCount }}</span>
+                </button>
+            </div>
+
+            <div class="src-reservation-tools">
+                <label class="src-reservation-search" for="reservationSearch">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <span class="sr-only">Buscar por usuario, equipo, serial o ubicación</span>
+                    <input type="search" id="reservationSearch" name="search" value="{{ request()->query('search', '') }}" placeholder="Buscar por usuario, equipo..." autocomplete="off">
+                </label>
+
+                <div class="src-reservation-view-toggle" role="group" aria-label="Tipo de vista">
+                    <button type="button" class="is-active" data-reservation-view="cards" aria-label="Vista en tarjetas" aria-pressed="true">
+                        <i class="fas fa-list" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" data-reservation-view="compact" aria-label="Vista compacta" aria-pressed="false">
+                        <i class="fas fa-th-large" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <section class="src-reservations-list" id="reservationsList" aria-label="Reservas">
+            @forelse ($reservas as $reserva)
+                @php
+                    $nombreSolicitante = $reserva->user->name ?? 'Usuario';
+                    $correoSolicitante = $reserva->user->email ?? '';
+                    $rolSolicitante = optional($reserva->user->roles->first())->name ?? 'Usuario';
+                    $rolSolicitante = $rolSolicitante === 'Administracion' ? 'Administrador' : $rolSolicitante;
+                    $iniciales = collect(preg_split('/\s+/', trim($nombreSolicitante)) ?: [])
+                        ->filter()
+                        ->take(2)
+                        ->map(fn ($parte) => mb_strtoupper(mb_substr($parte, 0, 1, 'UTF-8'), 'UTF-8'))
+                        ->implode('');
+
+                    if ($reserva->computador_id) {
+                        $nombreRecurso = trim(($reserva->computador->marca ?? 'Computador') . ' ' . ($reserva->computador->modelo ?? ''));
+                        $serialRecurso = $reserva->computador->serial ?? 'Sin serial';
+                        $bloqueUbicacion = $reserva->computador->aula->bloque
+                            ?? $reserva->computador->bloque
+                            ?? 'Sin bloque';
+                        $aulaUbicacion = $reserva->computador->aula->nombre
+                            ?? $reserva->computador->laboratorio_aula
+                            ?? 'Sin aula';
+                    } else {
+                        $nombreRecurso = $reserva->aula->nombre ?? 'Aula completa';
+                        $serialRecurso = 'Reserva de espacio';
+                        $bloqueUbicacion = $reserva->aula->bloque ?? 'Sin bloque';
+                        $aulaUbicacion = $reserva->aula->nombre ?? 'Aula';
+                    }
+
+                    $fechaLabel = \Illuminate\Support\Carbon::parse($reserva->fecha)
+                        ->locale('es')
+                        ->translatedFormat('d M Y');
+                    $horaInicio = $reserva->bloque
+                        ? \Illuminate\Support\Carbon::parse($reserva->bloque->hora_inicio)->format('H:i')
+                        : '';
+                    $horaFin = $reserva->bloque
+                        ? \Illuminate\Support\Carbon::parse($reserva->bloque->hora_fin)->format('H:i')
+                        : '';
+                    $duracionHoras = $reserva->bloque
+                        ? (int) round(\Illuminate\Support\Carbon::parse($reserva->bloque->hora_inicio)
+                            ->diffInMinutes(\Illuminate\Support\Carbon::parse($reserva->bloque->hora_fin)) / 60)
+                        : 0;
+                    $duracionLabel = $duracionHoras === 1 ? '1 hora' : $duracionHoras . ' horas';
+
+                    $filtroEstado = match ($reserva->estado) {
+                        'pendiente' => 'pending',
+                        'confirmada' => 'confirmed',
+                        'entregada' => 'in-use',
+                        default => 'history',
+                    };
+                    $estadoLabel = match ($reserva->estado) {
+                        'pendiente' => 'Pendiente',
+                        'confirmada' => 'Confirmada',
+                        'entregada' => 'En uso',
+                        'devuelta' => 'Devuelta',
+                        'cancelada' => 'Rechazada / Cancelada',
+                        'no_show' => 'No se presentó',
+                        default => ucfirst($reserva->estado),
+                    };
+                    $estadoClass = match ($reserva->estado) {
+                        'pendiente' => 'pending',
+                        'confirmada' => 'confirmed',
+                        'entregada' => 'in-use',
+                        'devuelta' => 'returned',
+                        'cancelada', 'no_show' => 'cancelled',
+                        default => 'muted',
+                    };
+                    $textoBusqueda = \Illuminate\Support\Str::lower(implode(' ', [
+                        $nombreSolicitante,
+                        $correoSolicitante,
+                        $rolSolicitante,
+                        $nombreRecurso,
+                        $serialRecurso,
+                        $bloqueUbicacion,
+                        $aulaUbicacion,
+                        $fechaLabel,
+                        $horaInicio,
+                        $horaFin,
+                    ]));
+                @endphp
+
+                <article
+                    class="src-reservation-item"
+                    data-reservation-status="{{ $filtroEstado }}"
+                    data-search="{{ $textoBusqueda }}"
+                >
+                    <div class="src-reservation-details">
+                        <div class="src-reservation-person">
+                            <span class="src-reservation-avatar" aria-hidden="true">{{ $iniciales }}</span>
+                            <div>
+                                <strong>{{ $nombreSolicitante }}</strong>
+                                <span>{{ $rolSolicitante }}@if ($correoSolicitante) · {{ $correoSolicitante }}@endif</span>
+                            </div>
+                        </div>
+
+                        <div class="src-reservation-resource">
+                            <span class="src-reservation-resource-icon" aria-hidden="true">
+                                <i class="{{ $reserva->computador_id ? 'fas fa-desktop' : 'fas fa-door-open' }}"></i>
+                            </span>
+                            <div>
+                                <strong>{{ $nombreRecurso }}</strong>
+                                <span class="src-reservation-resource-meta">
+                                    <span class="src-reservation-serial">Serial: {{ $serialRecurso }}</span>
+                                    <span><i class="fas fa-map-marker-alt" aria-hidden="true"></i> {{ $bloqueUbicacion }} · {{ $aulaUbicacion }}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="src-reservation-schedule">
+                        <span class="src-reservation-schedule-icon" aria-hidden="true"><i class="far fa-clock"></i></span>
+                        <div>
+                            <strong>{{ ucfirst($fechaLabel) }}</strong>
+                            <span>{{ $horaInicio }} - {{ $horaFin }} <small>({{ $duracionLabel }})</small></span>
+                        </div>
+                    </div>
+
+                    <div class="src-reservation-actions-panel">
+                        <span class="src-reservation-badge src-reservation-badge-{{ $estadoClass }}">
+                            <span aria-hidden="true"></span>{{ $estadoLabel }}
                         </span>
-                    </td>
-                    <td><span class="text-monospace text-secondary">{{ $reserva->clave_unica }}</span></td>
-                    <td>
-                        @if ($reserva->estado == 'pendiente')
-                            <span class="badge bg-gradient-warning px-2 py-1 text-md"><i class="fas fa-hourglass-half mr-1"></i> Pendiente</span>
-                        @elseif ($reserva->estado == 'entregada')
-                            <span class="badge bg-gradient-success px-2 py-1 text-md"><i class="fas fa-check-circle mr-1"></i> Entregada</span>
-                        @elseif ($reserva->estado == 'devuelta')
-                            <span class="badge bg-gradient-info px-2 py-1 text-md"><i class="fas fa-undo mr-1"></i> Devuelta</span>
-                        @elseif ($reserva->estado == 'cancelada')
-                            <span class="badge bg-gradient-danger px-2 py-1 text-md"><i class="fas fa-ban mr-1"></i> Cancelada</span>
-                        @elseif ($reserva->estado == 'no_show')
-                            <span class="badge bg-gradient-dark px-2 py-1 text-md"><i class="fas fa-user-slash mr-1"></i> No se presentó</span>
-                        @else
-                            <span class="badge bg-gradient-secondary px-2 py-1 text-md">{{ ucfirst($reserva->estado) }}</span>
-                        @endif
-                    </td>
-                    <td class="text-center align-middle text-nowrap">
-                        <div class="d-inline-flex align-items-center">
-                            {{-- Ver Detalles --}}
-                            <a class="btn bg-gradient-info btn-sm mr-1" href="{{ route('reservas.show', $reserva->id) }}" title="Ver detalles">
-                                <i class="far fa-eye fa-fw text-white"></i>
+
+                        <div class="src-reservation-action-buttons">
+                            <a class="src-reservation-detail-button" href="{{ route('reservas.show', $reserva->id) }}">
+                                <i class="far fa-eye" aria-hidden="true"></i>
+                                Ver detalle
                             </a>
 
-                            {{-- Aprobar / Confirmar Ingreso (Solo Celador o Administración) --}}
-                            @role('Celador|Administracion')
-                                @if($reserva->estado == 'pendiente')
-                                    <form action="{{ route('reservas.confirmar', $reserva->id) }}" method="POST" style="display:inline-block;" class="m-0 p-0 mr-1">
+                            @if ($reserva->estado === 'pendiente')
+                                @can('aprobar-reservas')
+                                    <form action="{{ route('reservas.confirmar', $reserva->id) }}" method="POST" class="js-reservation-confirmation" data-confirm-kind="confirm">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="btn bg-gradient-success btn-sm" title="Confirmar Ingreso">
-                                            <i class="fas fa-check fa-fw text-white"></i>
+                                        <button type="submit" class="src-reservation-confirm-button">
+                                            <i class="fas fa-check" aria-hidden="true"></i> Confirmar
                                         </button>
                                     </form>
-                                @endif
-                            @endrole
 
-                            {{-- Cancelar Reserva[cite: 6] --}}
-                            @can('cancelar-reservas')
-                                @if($reserva->estado == 'pendiente')
-                                <form method="POST" action="{{ route('reservas.destroy', $reserva->id) }}" style="display:inline-block;" class="delete-form m-0 p-0">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="btn bg-gradient-danger btn-sm cancel-button" title="Cancelar reserva">
-                                        <i class="fas fa-times fa-fw text-white"></i>
-                                    </button>
-                                </form>
-                                @endif
-                            @endcan
+                                    <form action="{{ route('reservas.destroy', $reserva->id) }}" method="POST" class="js-reservation-confirmation" data-confirm-kind="reject">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="src-reservation-reject-button">
+                                            <i class="fas fa-times" aria-hidden="true"></i> Rechazar
+                                        </button>
+                                    </form>
+                                @else
+                                    @can('cancelar-reservas')
+                                        @if ($reserva->user_id === auth()->id())
+                                            <form action="{{ route('reservas.destroy', $reserva->id) }}" method="POST" class="js-reservation-confirmation" data-confirm-kind="cancel">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="src-reservation-cancel-button">
+                                                    <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @endcan
+                                @endcan
+                            @endif
                         </div>
-                    </td>
-                </tr>
-            @endforeach
-        </x-adminlte-datatable>
-    </x-adminlte-card>
-@stop
+                    </div>
+                </article>
+            @empty
+                <div class="src-reservations-empty">
+                    <i class="far fa-calendar" aria-hidden="true"></i>
+                    <strong>Aún no tienes reservas</strong>
+                    <span>Cuando realices una reserva, podrás consultar aquí su estado y horario.</span>
+                    @can('crear-reservas')
+                        <a href="{{ route('reservas.create') }}">Crear una reserva</a>
+                    @endcan
+                </div>
+            @endforelse
 
-@section('css')
-<style>
-    #reservasTable tbody td:last-child {
-        white-space: nowrap !important;
-        width: 1% !important;
-    }
-    #reservasTable tbody td {
-        vertical-align: middle !important;
-        padding: 0.75rem 0.5rem !important;
-    }
-</style>
+            @if ($reservas->isNotEmpty())
+                <div class="src-reservations-empty src-reservations-filter-empty" id="reservationsFilterEmpty" hidden>
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <strong>No encontramos reservas</strong>
+                    <span>Ajusta el filtro o la búsqueda e inténtalo de nuevo.</span>
+                </div>
+            @endif
+        </section>
+        <x-src-pagination :items="$reservas" />
+    </div>
 @stop
 
 @section('js')
-    @if ($message = Session::get('success'))
-        <script>
-            Swal.fire({
-                title: "¡Éxito!",
-                text: "{{ $message }}",
-                timer: 2500,
-                icon: "success",
-                confirmButtonColor: '#3085d6'
-            });
-        </script>
-    @endif
-    @if ($message = Session::get('error'))
-        <script>
-            Swal.fire({
-                title: "Atención",
-                text: "{{ $message }}",
-                icon: "error",
-                confirmButtonColor: '#d33'
-            });
-        </script>
-    @endif
-
     <script>
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.cancel-button')) {
-                var button = e.target.closest('.cancel-button');
-                var form = button.closest('form');
-                Swal.fire({
-                    title: "¿Cancelar reserva?",
-                    text: "Esta acción liberará el equipo o aula apartada.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: "Sí, cancelar",
-                    cancelButtonText: "Volver"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
+        @if ($message = Session::get('success'))
+            Swal.fire({
+                title: '¡Éxito!',
+                text: @json($message),
+                timer: 2500,
+                icon: 'success',
+                confirmButtonColor: '#a6262e'
+            });
+        @endif
+
+        @if ($message = Session::get('error'))
+            Swal.fire({
+                title: 'Atención',
+                text: @json($message),
+                icon: 'error',
+                confirmButtonColor: '#a6262e'
+            });
+        @endif
+
+        (function () {
+            var list = document.getElementById('reservationsList');
+            if (!list) return;
+
+            var form = document.querySelector('[data-reservation-server-form]');
+            var stateInput = document.querySelector('[data-reservation-state]');
+            var tabs = document.querySelectorAll('[data-reservation-filter]');
+            var search = document.getElementById('reservationSearch');
+
+            tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    stateInput.value = tab.dataset.reservationQueryValue || '';
+                    tabs.forEach(function (item) {
+                        var selected = item === tab;
+                        item.classList.toggle('is-active', selected);
+                        item.setAttribute('aria-pressed', selected ? 'true' : 'false');
+                    });
+                    form.submit();
                 });
-            }
-        });
+            });
+
+            var searchTimeout;
+            search.addEventListener('input', function () {
+                window.clearTimeout(searchTimeout);
+                searchTimeout = window.setTimeout(function () {
+                    form.submit();
+                }, 350);
+            });
+
+            document.querySelectorAll('[data-reservation-view]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var compact = button.dataset.reservationView === 'compact';
+                    list.classList.toggle('is-compact', compact);
+                    document.querySelectorAll('[data-reservation-view]').forEach(function (item) {
+                        var selected = item === button;
+                        item.classList.toggle('is-active', selected);
+                        item.setAttribute('aria-pressed', selected ? 'true' : 'false');
+                    });
+                });
+            });
+
+            document.querySelectorAll('.js-reservation-confirmation').forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    var kind = form.dataset.confirmKind;
+                    var messages = {
+                        confirm: {
+                            title: '¿Confirmar esta reserva?',
+                            text: 'La solicitud será aprobada y quedará pendiente de entrega.',
+                            confirmButtonText: 'Sí, confirmar'
+                        },
+                        reject: {
+                            title: '¿Rechazar esta reserva?',
+                            text: 'La solicitud será cancelada y el horario quedará liberado.',
+                            confirmButtonText: 'Sí, rechazar'
+                        },
+                        cancel: {
+                            title: '¿Cancelar tu reserva?',
+                            text: 'Esta acción liberará el equipo o aula seleccionada.',
+                            confirmButtonText: 'Sí, cancelar'
+                        }
+                    };
+                    var message = messages[kind];
+
+                    Swal.fire({
+                        title: message.title,
+                        text: message.text,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#a6262e',
+                        cancelButtonColor: '#778087',
+                        confirmButtonText: message.confirmButtonText,
+                        cancelButtonText: 'Volver'
+                    }).then(function (result) {
+                        if (result.isConfirmed) form.submit();
+                    });
+                });
+            });
+        })();
     </script>
 @stop

@@ -1,81 +1,49 @@
 @extends('adminlte::page')
 
-@section('title', 'S.O.A.H')
+@section('title', 'Editar Rol')
 
 @section('content_header')
-<h1 class="m-0 text-dark">Editar Rol</h1>
+    <x-src-page-hero
+        eyebrow="Seguridad · Roles"
+        title="Editar rol"
+        description="Actualiza el nombre del perfil y los permisos que controlan su acceso."
+        icon="fas fa-user-shield" />
 @stop
 
 @section('content')
-<x-adminlte-card>
-    <form method="POST" action="{{ route('roles.update', $role->id) }}" enctype="multipart/form-data">
-        @csrf
-        @method('PUT')
-        <div class="row">
-            <div class="col-md-5">
-                <x-adminlte-input name="name" label="Nombre Rol" placeholder="Nombre Rol" :value="$role->name" />
+    <div class="src-form-page">
+        <form method="POST" action="{{ route('roles.update', $role->id) }}" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <x-src-validation-errors />
+
+            <section class="src-form-section">
+                <header class="src-form-section-heading">
+                    <span><i class="fas fa-user-shield" aria-hidden="true"></i></span>
+                    <div><h2>Identificación del rol</h2><p>Actualiza el nombre de este perfil de acceso.</p></div>
+                </header>
+                <div class="src-form-grid">
+                    <div class="src-form-field src-form-field-full">
+                        <label for="name">Nombre del rol <span aria-hidden="true">*</span></label>
+                        <input class="src-form-control" id="name" name="name" type="text" value="{{ old('name', $role->name) }}" required>
+                        @error('name')<span class="src-form-error">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+            </section>
+
+            <section class="src-form-section">
+                <header class="src-form-section-heading">
+                    <span><i class="fas fa-key" aria-hidden="true"></i></span>
+                    <div><h2>Permisos del rol</h2><p>Selecciona los permisos necesarios. Puedes marcar todos los de un módulo.</p></div>
+                </header>
+                @include('roles._permission-groups', ['readOnly' => false, 'rolePermissions' => $rolePermissions])
+                @error('permission')<span class="src-form-error">{{ $message }}</span>@enderror
+            </section>
+
+            <div class="src-form-actions">
+                <button class="src-catalog-primary-action" type="submit"><i class="fas fa-check" aria-hidden="true"></i> Actualizar rol</button>
+                <a class="src-catalog-secondary-action" href="{{ route('roles.index') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</a>
             </div>
-            <div class="col-md-9"></div> <!-- Columna vacía para ocupar espacio -->
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-md-12">
-                <label for="checkPermisos" class="form-label">Permisos para este rol:</label>
-                <table class="table table-bordered table-striped">
-                    <tbody>
-                        @foreach ($permission->chunk(4) as $chunk)
-                        <tr>
-                            @foreach ($chunk as $p)
-                            <td>
-                                <div class="form-check">
-                                    <input name="permission[]" class="form-check-input" type="checkbox"
-                                           value="{{ $p->id }}" id="{{ $p->id }}"
-                                           {{ in_array($p->id, $rolePermissions) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="{{ $p->id }}">
-                                        {{ $p->name }}
-                                    </label>
-                                </div>
-                            </td>
-                            @endforeach
-
-                            {{-- Asegura que cada fila tenga exactamente 4 columnas --}}
-                            @for ($i = $chunk->count(); $i < 4; $i++)
-                                <td></td>
-                            @endfor
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <br>
-        <div class="row">
-            <div class="form-group col-md-6">
-                <x-adminlte-button class="btn btn-success mr-2" type="submit" label=" Guardar Cambios" theme="primary">
-                    <i class="fas fa-save"></i>
-                </x-adminlte-button>
-                <a href="{{ route('roles.index') }}" class="btn btn-secondary mr-2">
-                    <i class="fas fa-undo"></i> Cancelar
-                </a>
-            </div>
-        </div>
-    </form>
-</x-adminlte-card>
-
-@if (session('success'))
-<div class="alert alert-success">
-    {{ session('success') }}
-</div>
-@endif
+        </form>
+    </div>
 @stop
-
-
-
-<script>
-    function desactivarBoton() {
-        let btn = document.getElementById("btnGuardar");
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-    }
-</script>

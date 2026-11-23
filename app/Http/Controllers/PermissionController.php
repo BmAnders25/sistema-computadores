@@ -10,10 +10,31 @@ class PermissionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $permissions = Permission::all();
-        return view('permissions.index', compact('permissions'));
+        $query = Permission::query()->withCount('roles');
+        $search = trim((string) $request->query('search', ''));
+
+        if ($search !== '') {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        $estado = $request->query('estado');
+        if ($estado === 'asignado') {
+            $query->has('roles');
+        } elseif ($estado === 'sin_asignar') {
+            $query->doesntHave('roles');
+        }
+
+        $totalPermisos = Permission::count();
+        $asignados = Permission::has('roles')->count();
+        $sinAsignar = $totalPermisos - $asignados;
+
+        $permissions = $query->orderBy('name')
+            ->paginate($this->catalogPerPage($request))
+            ->withQueryString();
+
+        return view('permissions.index', compact('permissions', 'totalPermisos', 'asignados', 'sinAsignar'));
     }
 
     /**

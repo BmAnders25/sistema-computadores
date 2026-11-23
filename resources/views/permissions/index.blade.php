@@ -3,91 +3,120 @@
 @section('title', 'Permisos')
 
 @section('content_header')
-<h1 class="m-0 text-dark">
-    Administración de Permisos</h1>
+    <x-src-page-hero
+        eyebrow="Seguridad"
+        title="Administración de permisos"
+        description="Consulta y administra las capacidades disponibles para los roles del sistema."
+        icon="fas fa-user-shield" />
 @stop
 
 @section('content')
-<x-adminlte-card>
-    @can('crear-permisos')
-    <a class="btn btn-primary mr-2" href="{{ route('permissions.create') }}" role="button"><i class="fa fa-plus"></i> Nuevo
-        Permiso</a>
-    @endcan
-    <div class="card-body">
-        @php
-        $config['language'] = ['url' => asset('vendor/datatables/es-CO.json')];
-        //$config['paging'] = true;
-        //$config['lengthMenu'] = [10, 50, 100, 500];
-        @endphp
-        <x-adminlte-datatable id="table1" :heads="['Id', 'Nombre', 'Acciones']" head-theme="dark" :config=$config striped hoverable
-            with-buttons>
-            @foreach ($permissions as $permission)
-            <tr>
-                <td>{{ $permission->id }}</td>
-                <td>{{ $permission->name }}</td>
-                <td>
-                    <a class="btn btn-info" href="{{ route('permissions.show', $permission->id) }}" role="button"><i
-                            class="far fa-eye fa-fw"></i></a>
-                    @can('editar-permisos')
-                    <a class="btn btn-success" href="{{ route('permissions.edit', $permission->id) }}" role="button"><i
-                            class="fas fa-pencil-alt fa-fw"></i></a>
-                    @endcan
-                    @can('borrar-permisos')
-                    <form method="POST" action="{{ route('permissions.destroy', $permission->id) }}" style="display: inline;"
-                        class="delete-form">
-                        @csrf
-                        @method('DELETE')
-                        <button type="button" class="btn btn-warning delete-button">
-                            <i class="far fa-trash-alt fa-fw"></i>
-                        </button>
-                    </form>
-                    @endcan
-                </td>
-            </tr>
-            @endforeach
-        </x-adminlte-datatable>
-    </div>
-</x-adminlte-card>
-@stop
+    @if ($message = Session::get('success'))
+        <div class="alert alert-success" role="status">{{ $message }}</div>
+    @endif
 
-@section('footer')
-<footer>
-    <p><img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" width="4%" style="border-radius: 15px" alt="Logo S.O.AH"> © {{ date('Y') }} S.O.A.H.  Sistema De Organización y Administración Hotelera . Todos los derechos reservados.</p>
-</footer>
+    @php
+        $catalogHeaders = ['Permiso', 'Roles asignados'];
+    @endphp
+
+    <div class="src-catalog-page" data-catalog-page data-catalog-title="Permisos · S.R.C" data-catalog-filename="permisos">
+        <div class="src-catalog-kpis">
+            <article class="src-catalog-kpi">
+                <span class="src-catalog-kpi-icon"><i class="fas fa-key" aria-hidden="true"></i></span>
+                <div><small>Total de permisos</small><strong>{{ $totalPermisos }}</strong></div>
+            </article>
+            <article class="src-catalog-kpi src-catalog-kpi-positive">
+                <span class="src-catalog-kpi-icon"><i class="fas fa-check-circle" aria-hidden="true"></i></span>
+                <div><small>Asignados a roles</small><strong>{{ $asignados }}</strong></div>
+            </article>
+            <article class="src-catalog-kpi src-catalog-kpi-neutral">
+                <span class="src-catalog-kpi-icon"><i class="fas fa-minus-circle" aria-hidden="true"></i></span>
+                <div><small>Sin asignar</small><strong>{{ $sinAsignar }}</strong></div>
+            </article>
+        </div>
+
+        <div class="src-catalog-create-row">
+            @can('crear-permisos')
+                <a class="src-catalog-create-button" href="{{ route('permissions.create') }}"><i class="fas fa-plus" aria-hidden="true"></i> Nuevo Permiso</a>
+            @endcan
+        </div>
+
+        <x-src-catalog-toolbar :filters="[
+            ['label' => 'Todos', 'value' => 'all', 'query' => '', 'count' => $totalPermisos],
+            ['label' => 'Asignados', 'value' => 'assigned', 'query' => 'asignado', 'count' => $asignados],
+            ['label' => 'Sin asignar', 'value' => 'unassigned', 'query' => 'sin_asignar', 'count' => $sinAsignar],
+        ]" :selected-filter="request()->query('estado', '')" search-placeholder="Buscar por nombre de permiso...">
+        </x-src-catalog-toolbar>
+
+        <section class="src-catalog-grid" data-catalog-grid data-catalog-headers="{{ json_encode($catalogHeaders) }}" aria-label="Permisos registrados">
+            @forelse ($permissions as $permission)
+                @php
+                    $isAssigned = $permission->roles_count > 0;
+                    $filterStatus = $isAssigned ? 'assigned' : 'unassigned';
+                    $catalogRecord = [$permission->name, $permission->roles_count];
+                @endphp
+                <article
+                    class="src-catalog-card src-role-card"
+                    data-catalog-card
+                    data-catalog-status="{{ $filterStatus }}"
+                    data-catalog-search="{{ \Illuminate\Support\Str::lower($permission->name) }}"
+                    data-catalog-record="{{ json_encode($catalogRecord, JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP) }}"
+                >
+                    <header class="src-catalog-card-header">
+                        <div class="src-catalog-card-heading">
+                            <span class="src-catalog-icon"><i class="fas fa-key" aria-hidden="true"></i></span>
+                            <div><h2>{{ $permission->name }}</h2><p>Permiso del sistema</p></div>
+                        </div>
+                        <span class="src-catalog-status src-catalog-status-{{ $isAssigned ? 'active' : 'inactive' }}"><span aria-hidden="true"></span>{{ $isAssigned ? 'Asignado' : 'Sin asignar' }}</span>
+                    </header>
+                    <div class="src-catalog-card-body">
+                        <div class="src-role-counts src-role-counts-single">
+                            <div><strong>{{ $permission->roles_count }}</strong><span>{{ \Illuminate\Support\Str::plural('rol vinculado', $permission->roles_count) }}</span></div>
+                        </div>
+                    </div>
+                    <footer class="src-catalog-card-footer">
+                        <span class="src-catalog-card-note"><i class="fas fa-shield-alt mr-1" aria-hidden="true"></i> Control de acceso</span>
+                        <div class="src-catalog-actions">
+                            <a href="{{ route('permissions.show', $permission->id) }}"><i class="far fa-eye" aria-hidden="true"></i> Ver</a>
+                            @can('editar-permisos')
+                                <a class="src-catalog-edit" href="{{ route('permissions.edit', $permission->id) }}"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Editar</a>
+                            @endcan
+                            @can('borrar-permisos')
+                                <form method="POST" action="{{ route('permissions.destroy', $permission->id) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="button"
+                                        class="src-catalog-delete"
+                                        data-catalog-delete
+                                        data-confirm-title="¿Eliminar este permiso?"
+                                        data-confirm-text="Los roles que tengan asignada esta capacidad dejarán de contar con ella."
+                                        data-confirm-button="Sí, eliminar"
+                                    ><i class="far fa-trash-alt" aria-hidden="true"></i> Eliminar</button>
+                                </form>
+                            @endcan
+                        </div>
+                    </footer>
+                </article>
+            @empty
+                <div class="src-catalog-empty">
+                    <i class="fas fa-key" aria-hidden="true"></i>
+                    <strong>No hay permisos registrados</strong>
+                    <span>Las capacidades del sistema aparecerán aquí.</span>
+                </div>
+            @endforelse
+            @if ($permissions->isNotEmpty())
+                <div class="src-catalog-empty" data-catalog-filter-empty hidden>
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <strong>No encontramos permisos</strong>
+                    <span>Ajusta el filtro o la búsqueda e inténtalo de nuevo.</span>
+                </div>
+            @endif
+        </section>
+        <x-src-pagination :items="$permissions" />
+    </div>
 @stop
 
 @section('js')
-
-@if ($message = Session::get('success'))
-<script>
-    Swal.fire({
-        title: "Operación Exitosa!",
-        text: "{{ $message }}",
-        timer: 2000,
-        icon: "success"
-    });
-</script>
-@endif
-
-<script>
-    var deleteButtons = document.querySelectorAll('.delete-button');
-    deleteButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            var form = this.parentElement;
-            Swal.fire({
-                title: "¿Estás seguro de Eliminar este Permiso?",
-                text: "¡No se podrá recuperar la información!",
-                icon: "error",
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: "¡Sí, Eliminar!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-            })
-        });
-    });
-</script>
+    <script src="{{ asset('js/src-catalog.js') }}"></script>
 @stop

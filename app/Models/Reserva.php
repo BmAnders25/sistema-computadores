@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 class Reserva extends Model
 {
-    public const ACTIVAS = ['pendiente', 'entregada'];
+    public const ACTIVAS = ['pendiente', 'confirmada', 'entregada'];
 
     protected $fillable = [
         'user_id', 'computador_id', 'aula_id', 'bloque_horario_id', 'fecha',
@@ -13,9 +13,11 @@ class Reserva extends Model
     ];
 
     protected $casts = [
-        'fecha'        => 'date',
-        'entregado_at' => 'datetime',
-        'devuelto_at'  => 'datetime',
+        'fecha'                         => 'date',
+        'entregado_at'                  => 'datetime',
+        'devuelto_at'                   => 'datetime',
+        'recordatorio_inicio_enviado_at' => 'datetime',
+        'recordatorio_fin_enviado_at'    => 'datetime',
     ];
 
     public function user()       { return $this->belongsTo(User::class); }

@@ -2,30 +2,23 @@
 
 @section('adminlte_css_pre')
     <style>
-        /* 1. Fondo de pantalla con la misma capa de atenuación oscura (oscurecido/desvanecido) */
         body.login-page {
-            background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), 
-                        url("{{ asset('vendor/adminlte/dist/img/fondo-login.jpg') }}") no-repeat center center fixed !important;
-            background-size: cover !important;
+            background: #f8fafc !important;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
         }
 
-        /* 2. Contenedor principal con efecto Glassmorphism, sombra y borde blanco grueso idéntico al Login */
         .login-box {
-            width: 450px !important;
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
-            border: 6px solid #ffffff !important;
-            border-radius: 12px !important;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
-            padding: 30px 25px 20px 25px !important;
+            width: min(450px, calc(100% - 2rem)) !important;
+            padding: 1.5rem !important;
+            background: #fff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 16px !important;
+            box-shadow: 0 14px 36px rgba(31, 41, 55, 0.1) !important;
         }
 
-        /* Limpieza de componentes nativos heredados de AdminLTE */
         .card, .card-body.login-card-body {
             background: transparent !important;
             box-shadow: none !important;
@@ -34,66 +27,64 @@
             margin: 0 !important;
         }
 
-        /* 3. Título intermedio exterior "Verificación en dos pasos" */
         .login-box-msg {
-            font-size: 1rem !important;
-            color: #2c333e !important;
+            color: #202b3b !important;
+            font-size: 1.15rem !important;
             text-align: center !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 1.1rem !important;
             padding: 0 !important;
-            font-weight: 500 !important;
+            font-weight: 750 !important;
         }
 
-        /* 4. Bloque oscuro interno que encapsula el formulario */
         .auth-body-container {
-            background-color: #2b333e !important;
-            padding: 25px 20px !important;
-            border-radius: 6px !important;
-            margin-bottom: 0 !important;
+            padding: 1.1rem !important;
+            background: #fff !important;
+            border: 1px solid #edf0f4 !important;
+            border-radius: 12px !important;
         }
 
-        /* Texto explicativo dentro de la caja oscura */
         .auth-body-container .instruction-text {
-            color: #ffffff !important;
-            font-size: 0.9rem !important;
+            color: #5d6878 !important;
+            font-size: 0.86rem !important;
             line-height: 1.4;
-            font-weight: 400 !important;
         }
 
-        /* Input de código estilizado en color blanco */
         .auth-body-container .form-control-code {
-            background-color: #ffffff !important;
-            border: none !important;
-            height: 46px !important;
-            color: #333333 !important;
-            font-size: 1.4rem !important;
+            height: 48px !important;
+            color: #293445 !important;
+            background: #fff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 9px !important;
+            font-size: 1.3rem !important;
             font-weight: 700 !important;
             letter-spacing: 6px !important;
             text-align: center !important;
-            border-radius: 4px !important;
         }
 
-        /* 5. Botón de verificación azul plano */
+        .auth-body-container .form-control-code:focus {
+            border-color: #a6262e !important;
+            box-shadow: 0 0 0 3px rgba(166, 38, 46, 0.12) !important;
+        }
+
         .btn-verificar {
-            background-color: #007bff !important;
+            background-color: #a6262e !important;
             border: none !important;
             color: #ffffff !important;
-            height: 40px !important;
-            font-size: 0.95rem !important;
+            height: 42px !important;
+            font-size: 0.9rem !important;
             font-weight: 600 !important;
-            border-radius: 4px !important;
+            border-radius: 9px !important;
             width: 100% !important;
             transition: background-color 0.2s ease !important;
         }
 
         .btn-verificar:hover {
-            background-color: #0056b3 !important;
+            background-color: #7b1e24 !important;
             color: #ffffff !important;
         }
 
-        /* 6. Botón/Enlace inferior de reenvío dentro del contenedor oscuro */
         .btn-resend-link {
-            color: #ffffff !important;
+            color: #647184 !important;
             font-size: 0.85rem !important;
             text-decoration: none !important;
             background: transparent !important;
@@ -103,8 +94,8 @@
         }
 
         .btn-resend-link .highlight-text {
-            color: #007bff !important; /* Azul rey del sistema */
-            font-weight: 500 !important;
+            color: #a6262e !important;
+            font-weight: 650 !important;
         }
 
         .btn-resend-link:hover .highlight-text {

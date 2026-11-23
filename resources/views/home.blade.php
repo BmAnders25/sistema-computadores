@@ -3,7 +3,11 @@
 @section('title', 'S.R.C')
 
 @section('content_header')
-<h1 class="m-0 text-dark">S.R.C - Sistema de Reserva de Computadores.</h1>
+    <x-src-page-hero
+        eyebrow="Administración"
+        title="Panel de control"
+        description="Resumen del Sistema de Reserva de Computadores."
+        icon="fas fa-chart-line" />
 @stop
 
 @section('content')

@@ -21,6 +21,7 @@ class RoleSeeder extends Seeder
         $admin = ['Administracion'];
         $staff = ['Celador', 'Administracion'];
         $usuarios = ['Estudiante', 'Docente', 'Administracion'];
+        $canceladores = ['Estudiante', 'Docente', 'Celador', 'Administracion'];
 
         $matriz = [
             'home'                   => $todos,
@@ -28,7 +29,7 @@ class RoleSeeder extends Seeder
             'ver-disponibilidad'     => $todos,
             'ver-reservas'           => $todos,
             'crear-reservas'         => $usuarios,
-            'cancelar-reservas'      => $usuarios,
+            'cancelar-reservas'      => $canceladores,
             'reservar-aulas'         => ['Docente', 'Administracion'],
             'editar-reservas'        => ['Administracion'],
             'aprobar-reservas'      => ['Administracion', 'Celador'],
@@ -57,7 +58,7 @@ class RoleSeeder extends Seeder
             'ver-reservas'           => $todos,
             'crear-reservas'         => $usuarios,
             'editar-reservas'        => ['Administracion'],
-            'cancelar-reservas'      => $usuarios,
+            'cancelar-reservas'      => $canceladores,
             'reservar-aulas'         => ['Docente', 'Administracion'],
 
             // Mantenimiento (el celador reporta, administración corrige)
@@ -85,5 +86,11 @@ class RoleSeeder extends Seeder
         foreach ($matriz as $permiso => $roles) {
             Permission::firstOrCreate(['name' => $permiso])->syncRoles($roles);
         }
+
+        // El acceso estadístico permanece restringido exclusivamente a Administración.
+        Permission::firstOrCreate(['name' => 'ver-estadistica'])
+            ->syncRoles(['Administracion']);
+        Permission::firstOrCreate(['name' => 'ver-reportes'])
+            ->syncRoles(['Administracion']);
     }
 }

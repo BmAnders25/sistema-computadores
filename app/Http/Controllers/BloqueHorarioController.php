@@ -16,10 +16,36 @@ class BloqueHorarioController extends Controller
         $this->middleware('permission:borrar-bloques-horarios', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $bloques = BloqueHorario::all();
-        return view('bloques.index', compact('bloques'));
+        $query = BloqueHorario::query();
+        $search = trim((string) $request->query('search', ''));
+
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $query->where(function ($query) use ($like) {
+                $query->where('nombre', 'like', $like)
+                    ->orWhere('hora_inicio', 'like', $like)
+                    ->orWhere('hora_fin', 'like', $like);
+            });
+        }
+
+        $estado = $request->query('estado');
+        if ($estado === 'activo') {
+            $query->where('activo', true);
+        } elseif ($estado === 'inactivo') {
+            $query->where('activo', false);
+        }
+
+        $totalBloques = BloqueHorario::count();
+        $activos = BloqueHorario::where('activo', true)->count();
+        $inactivos = $totalBloques - $activos;
+
+        $bloques = $query->orderBy('hora_inicio')
+            ->paginate($this->catalogPerPage($request))
+            ->withQueryString();
+
+        return view('bloques.index', compact('bloques', 'totalBloques', 'activos', 'inactivos'));
     }
 
     public function create()

@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'S.O.A.H',
+    'title' => 'S.R.C',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -87,7 +87,7 @@ return [
         'enabled' => true,
         'img' => [
             'path' => 'vendor/adminlte/dist/img/logo.png',
-            'alt' => 'S.O.A.H Logo',
+            'alt' => 'S.R.C Logo',
             'class' => '',
             'width' => 50,
             'height' => 50,
@@ -172,7 +172,7 @@ return [
     /* Modo oscuro
     'classes_auth_card' => 'bg-gradient-dark',
     'classes_auth_header' => '',
-    'classes_auth_body' => 'bg-gradient-dark',
+    'classes_auth_body' => '',
     'classes_auth_footer' => 'text-center',
     'classes_auth_icon' => 'fa-fw text-light',
     'classes_auth_btn' => 'btn-flat btn-light',*/
@@ -226,7 +226,7 @@ return [
     'classes_content_wrapper' => '',
     'classes_content_header' => '',
     'classes_content' => '',
-    'classes_sidebar' => 'sidebar-dark-primary elevation-4',
+    'classes_sidebar' => 'sidebar-dark-primary elevation-0',
     'classes_sidebar_nav' => '',
     'classes_topnav' => 'navbar-white navbar-light',
     'classes_topnav_nav' => 'navbar-expand',
@@ -327,6 +327,23 @@ return [
 'menu' => [
     ['type' => 'navbar-search', 'text' => 'Buscar', 'topnav_right' => true],
     ['type' => 'fullscreen-widget', 'topnav_right' => true],
+    [
+        'type' => 'navbar-notification',
+        'id' => 'src-notificaciones',
+        'icon' => 'fas fa-bell',
+        'icon_color' => 'white',
+        'label' => '',
+        'label_color' => 'danger',
+        'topnav_right' => true,
+        'dropdown_mode' => true,
+        'url' => '/notificaciones',
+        'dropdown_flabel' => 'Ver todas',
+        'href' => '/notificaciones',
+        'update_cfg' => [
+            'route' => 'notificaciones.resumen',
+            'period' => 30,
+        ],
+    ],
     ['type' => 'sidebar-menu-search', 'text' => 'Buscar'],
 
     [
@@ -334,19 +351,36 @@ return [
         'route'   => 'dashboard',
         'can'     => ['ver-estadistica'],
         'icon'    => 'fas fa-chart-line',
+        'icon_color' => 'white',
         'classes' => 'text-sm',
     ],
 
     // --- Reservas ---
     ['header' => 'RESERVAS', 'classes' => 'text-uppercase text-light small fw-semibold'],
-
-    // Se activan en el paso 3 (descomenta cuando existan las rutas):
-    // ['text' => 'Reservar equipo', 'route' => 'reservas.create', 'can' => ['crear-reservas'],
-    //  'icon' => 'fas fa-calendar-plus', 'icon_color' => 'cyan', 'classes' => 'text-sm'],
-    // ['text' => 'Mis reservas', 'route' => 'reservas.index', 'can' => ['ver-reservas'],
-    //  'icon' => 'fas fa-calendar-check', 'icon_color' => 'cyan', 'classes' => 'text-sm'],
-    // ['text' => 'Entregas y devoluciones', 'route' => 'entregas.index', 'can' => ['ver-entregas'],
-    //  'icon' => 'fas fa-hand-holding', 'icon_color' => 'orange', 'classes' => 'text-sm'],
+    [
+        'text' => 'Disponibilidad',
+        'route' => 'disponibilidad.index',
+        'can' => ['ver-disponibilidad'],
+        'icon' => 'fas fa-calendar-alt',
+        'icon_color' => 'white',
+        'classes' => 'text-sm',
+    ],
+    [
+        'text' => 'Mis reservas',
+        'route' => 'reservas.index',
+        'can' => ['ver-reservas'],
+        'icon' => 'fas fa-calendar-check',
+        'icon_color' => 'white',
+        'classes' => 'text-sm',
+    ],
+    [
+        'text' => 'Entregas y devoluciones',
+        'route' => 'entregas.index',
+        'can' => ['ver-entregas'],
+        'icon' => 'fas fa-hand-holding',
+        'icon_color' => 'white',
+        'classes' => 'text-sm',
+    ],
 
     // --- Inventario ---
     ['header' => 'INVENTARIO', 'classes' => 'text-uppercase text-light small fw-semibold'],
@@ -355,7 +389,7 @@ return [
         'route'      => 'computadores.index',
         'can'        => ['ver-computadores'],
         'icon'       => 'fas fa-desktop',
-        'icon_color' => 'green',
+        'icon_color' => 'white',
         'classes'    => 'text-sm',
     ],
     [
@@ -363,7 +397,7 @@ return [
         'route'      => 'aulas.index',
         'can'        => ['ver-aulas'],
         'icon'       => 'fas fa-building',
-        'icon_color' => 'purple',
+        'icon_color' => 'white',
         'classes'    => 'text-sm',
     ],
     [
@@ -371,25 +405,24 @@ return [
         'route'      => 'bloques-horarios.index',
         'can'        => ['ver-bloques-horarios'],
         'icon'       => 'fas fa-clock',
-        'icon_color' => 'yellow',
+        'icon_color' => 'white',
         'classes'    => 'text-sm',
     ],
     [
-        'text' => 'Reservas', 
-        'route' => 
-        'reservas.index', 
-        'can' => ['ver-reservas'],
-        'icon' => 'fas fa-calendar-check', 
-        'icon_color' => 'cyan', 
-         'classes' => 'text-sm'],
-
+        'text'       => 'Reportes de ocupación',
+        'route'      => 'reportes.ocupacion',
+        'can'        => ['ver-reportes'],
+        'icon'       => 'fas fa-chart-bar',
+        'icon_color' => 'white',
+        'classes'    => 'text-sm',
+    ],
     // --- Configuración ---
-    ['header' => 'CONFIGURACIÓN', 'classes' => 'text-uppercase text-light small fw-semibold'],
+    ['header' => 'CONFIGURACIÓN / ADMINISTRACIÓN', 'classes' => 'text-uppercase text-light small fw-semibold'],
     [
         'text'       => 'Información institucional',
         'route'      => 'configuracion.index',
         'icon'       => 'fas fa-university',
-        'icon_color' => 'blue',
+        'icon_color' => 'white',
         'classes'    => 'text-sm',
     ],
     [
@@ -399,11 +432,11 @@ return [
         'can'     => ['ver-usuarios'],
         'submenu' => [
             ['text' => 'Usuarios', 'route' => 'users.index', 'can' => ['ver-usuarios'],
-             'icon' => 'fas fa-users', 'icon_color' => 'yellow', 'classes' => 'text-sm'],
+             'icon' => 'fas fa-users', 'icon_color' => 'white', 'classes' => 'text-sm'],
             ['text' => 'Roles', 'route' => 'roles.index', 'can' => ['ver-roles'],
-             'icon' => 'fas fa-user-cog', 'icon_color' => 'red', 'classes' => 'text-sm'],
+             'icon' => 'fas fa-user-cog', 'icon_color' => 'white', 'classes' => 'text-sm'],
             ['text' => 'Permisos', 'route' => 'permissions.index', 'can' => ['ver-permisos'],
-             'icon' => 'fas fa-user-shield', 'icon_color' => 'green', 'classes' => 'text-sm'],
+             'icon' => 'fas fa-user-shield', 'icon_color' => 'white', 'classes' => 'text-sm'],
         ],
     ],
 
@@ -412,7 +445,7 @@ return [
         'url'        => '/logout',
         'icon'       => 'fas fa-power-off',
         'icon_color' => 'white',
-        'classes'    => 'text-sm text-white bg-danger',
+        'classes'    => 'text-sm text-white logout-btn',
     ],
 ],
 
@@ -631,6 +664,26 @@ return [
                     'type' => 'css',
                     'asset' => false,
                     'location' => 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
+                ],
+            ],
+        ],
+        'SRCTheme' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/sistema.css',
+                ],
+            ],
+        ],
+        'SRCSidebarTheme' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/sidebar-custom.css',
                 ],
             ],
         ],

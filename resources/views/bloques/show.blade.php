@@ -3,127 +3,71 @@
 @section('title', 'Detalles del Bloque Horario')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Detalles del Franjeo: {{ $bloqueHorario->nombre }}</h1>
+    <section class="src-catalog-detail-heading">
+        <nav aria-label="Migas de pan">
+            <a href="{{ route('home') }}">S.R.C</a><span aria-hidden="true">/</span>
+            <a href="{{ route('bloques-horarios.index') }}">Configuración</a><span aria-hidden="true">/</span>
+            <span aria-current="page">{{ $bloqueHorario->nombre }}</span>
+        </nav>
+        <div class="src-catalog-detail-title-row">
+            <h1>{{ $bloqueHorario->nombre }}</h1>
+            <div class="src-catalog-detail-actions">
+                @can('editar-bloques-horarios')
+                    <a class="src-catalog-primary-action" href="{{ route('bloques-horarios.edit', $bloqueHorario->id) }}"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Editar</a>
+                @endcan
+                <a class="src-catalog-secondary-action" href="{{ route('bloques-horarios.index') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</a>
+            </div>
+        </div>
+    </section>
 @stop
 
 @section('content')
-@php
-    use Carbon\Carbon;
-    $inicio = Carbon::parse($bloqueHorario->hora_inicio);
-    $fin = Carbon::parse($bloqueHorario->hora_fin);
-    $minutosTotales = $inicio->diffInMinutes($fin);
-    $horas = floor($minutosTotales / 60);
-    $mins = $minutosTotales % 60;
-@endphp
+    @php
+        $inicio = \Illuminate\Support\Carbon::parse($bloqueHorario->hora_inicio);
+        $fin = \Illuminate\Support\Carbon::parse($bloqueHorario->hora_fin);
+        $minutos = $inicio->diffInMinutes($fin);
+        $duracion = $minutos % 60 === 0
+            ? (int) ($minutos / 60) . ' horas'
+            : floor($minutos / 60) . ' h ' . ($minutos % 60) . ' min';
+    @endphp
 
-<div class="row">
-    {{-- Columna Izquierda: Tarjeta de Presentación UX/UI --}}
-    <div class="col-md-4">
-        <div class="card card-outline card-primary shadow">
-            <div class="card-header text-center">
-                <h3 class="card-title font-weight-bold"><i class="far fa-clock mr-1"></i> Ficha Horaria</h3>
+    <div class="src-catalog-detail-layout">
+        <aside class="src-catalog-summary-card">
+            <span class="src-catalog-summary-icon"><i class="far fa-clock" aria-hidden="true"></i></span>
+            <h2>{{ $bloqueHorario->nombre }}</h2>
+            <p>Franja de disponibilidad institucional</p>
+            <div class="src-computer-summary-badges">
+                <span class="src-catalog-status src-catalog-status-{{ $bloqueHorario->activo ? 'active' : 'inactive' }}"><span aria-hidden="true"></span>{{ $bloqueHorario->activo ? 'Activo' : 'Inactivo' }}</span>
             </div>
-            <div class="card-body text-center bg-light">
-                <div class="mb-3">
-                    <span class="fa-stack fa-3x text-primary">
-                        <i class="fas fa-circle fa-stack-2x text-light border rounded-circle shadow-sm"></i>
-                        <i class="fas fa-hourglass-half fa-stack-1x text-primary"></i>
-                    </span>
+            <div class="src-block-detail-time">
+                <strong>{{ $inicio->format('H:i') }}</strong>
+                <span aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+                <strong>{{ $fin->format('H:i') }}</strong>
+            </div>
+            <p class="src-catalog-summary-caption">Duración: {{ $duracion }}</p>
+        </aside>
+
+        <div class="src-catalog-detail-main">
+            <section class="src-catalog-detail-card">
+                <header>
+                    <span class="src-catalog-detail-card-icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+                    <h2>Información del horario</h2>
+                </header>
+                <div class="src-catalog-detail-rows">
+                    <div class="src-catalog-detail-row"><span>Nombre</span><strong>{{ $bloqueHorario->nombre }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Hora de inicio</span><strong>{{ $inicio->format('H:i') }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Hora de fin</span><strong>{{ $fin->format('H:i') }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Duración total</span><strong>{{ $duracion }} ({{ $minutos }} minutos)</strong></div>
+                    <div class="src-catalog-detail-row"><span>Disponibilidad</span><strong>{{ $bloqueHorario->activo ? 'Disponible para reservas' : 'Inactivo para reservas' }}</strong></div>
                 </div>
-                <h4 class="font-weight-bold text-dark mb-1">{{ $bloqueHorario->nombre }}</h4>
-                <p class="text-muted mb-2">Franja de Disponibilidad Institucional</p>
-                
-                @if($bloqueHorario->activo)
-                    <span class="badge badge-success px-3 py-1 mb-3 text-md">
-                        <i class="fas fa-check-circle mr-1"></i> Habilitado
-                    </span>
-                @else
-                    <span class="badge badge-danger px-3 py-1 mb-3 text-md">
-                        <i class="fas fa-ban mr-1"></i> Deshabilitado
-                    </span>
-                @endif
-
-                <hr>
-
-                {{-- Línea de tiempo visual compacta UX --}}
-                <div class="text-left px-2">
-                    <label class="text-muted small mb-2 d-block font-weight-bold"><i class="fas fa-stream mr-1"></i> Línea Temporal del Bloque:</label>
-                    <div class="d-flex justify-content-between text-sm font-weight-bold text-dark mb-1">
-                        <span>{{ $inicio->format('h:i A') }}</span>
-                        <span class="text-muted small">({{ ($horas > 0 ? $horas . 'h ' : '') . ($mins > 0 ? $mins . 'min' : '') }})</span>
-                        <span>{{ $fin->format('h:i A') }}</span>
-                    </div>
-                    <div class="progress progress-sm rounded bg-secondary">
-                        <div class="progress-bar bg-gradient-info progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
-                    </div>
-                </div>
-            </div>
+            </section>
+            <section class="src-catalog-detail-card">
+                <header>
+                    <span class="src-catalog-detail-card-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></span>
+                    <h2>Uso del bloque horario</h2>
+                </header>
+                <p class="src-catalog-card-note mb-0">Esta franja puede seleccionarse al crear una reserva cuando está activa.</p>
+            </section>
         </div>
-    </div>
-
-    {{-- Columna Derecha: Cajas de Información Detallada --}}
-    <div class="col-md-8">
-        <div class="row">
-            {{-- Nombre del Bloque --}}
-            <div class="col-md-12">
-                <x-adminlte-info-box title="Identificador del Bloque" 
-                    text="{{ $bloqueHorario->nombre }}" 
-                    icon="fas fa-tag" 
-                    theme="navy"/>
-            </div>
-        </div>
-
-        <div class="row">
-            {{-- Hora de Inicio --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Apertura / Inicio" 
-                    text="{{ $inicio->format('h:i:s A') }} ({{ $inicio->format('H:i') }})" 
-                    icon="far fa-clock" 
-                    theme="info"/>
-            </div>
-
-            {{-- Hora de Fin --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Cierre / Fin" 
-                    text="{{ $fin->format('h:i:s A') }} ({{ $fin->format('H:i') }})" 
-                    icon="far fa-clock" 
-                    theme="danger"/>
-            </div>
-        </div>
-
-        <div class="row">
-            {{-- Duración Total --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Duración Efectiva" 
-                    text="{{ $minutosTotales }} minutos totales" 
-                    icon="fas fa-stopwatch" 
-                    theme="teal"/>
-            </div>
-
-            {{-- Estado Operativo --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Estado del Sistema" 
-                    text="{{ $bloqueHorario->activo ? 'Disponible para reservas' : 'Inactivo para los usuarios' }}" 
-                    icon="{{ $bloqueHorario->activo ? 'fas fa-toggle-on' : 'fas fa-toggle-off' }}" 
-                    theme="{{ $bloqueHorario->activo ? 'success' : 'secondary' }}"/>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Botones de Acción --}}
-<div class="mt-3 d-flex justify-content-between">
-    <a href="{{ route('bloques-horarios.index') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Regresar
-    </a>
-</div>
-@stop
-
-@section('footer')
-    <div style="max-height: 55px;" class="text-center text-muted">
-        <p>
-            <img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" alt="Logo UP" style="max-height: 70px; border-radius: 15px" class="mr-2"> 
-            © {{ date('Y') }} S.R.C - Sistema de Reserva de Computadores - Universidad de Pamplona Sede Villa del Rosario. Todos los derechos reservados.
-        </p>
     </div>
 @stop

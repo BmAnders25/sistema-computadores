@@ -45,8 +45,8 @@ class User extends Authenticatable
     return $this->esInstitucional() || $this->two_factor_enabled;
     }
 
-    /*public function reservas()
+    public function reservas()
     {
-        return $this->hasMany(Reserva::class); 
-}*/
+        return $this->hasMany(Reserva::class);
+    }
 }

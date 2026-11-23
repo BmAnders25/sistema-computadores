@@ -3,77 +3,56 @@
 @section('title', 'Editar Bloque Horario')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Editar Bloque Horario: {{ $bloqueHorario->nombre }}</h1>
+    <x-src-page-hero
+        eyebrow="Configuración · Bloques horarios"
+        title="Editar bloque horario"
+        description="Actualiza el nombre, las horas o la disponibilidad de esta franja."
+        icon="far fa-clock" />
 @stop
 
 @section('content')
-    <x-adminlte-card shadow header-theme="warning" theme="warning">
+    <div class="src-form-page">
         <form method="POST" action="{{ route('bloques-horarios.update', $bloqueHorario->id) }}">
             @csrf
             @method('PUT')
+            <x-src-validation-errors />
 
-            <div class="row">
-                {{-- Nombre }}
-                <x-adminlte-input name="nombre" label="Nombre del Bloque" placeholder="Ej: Bloque 1 (7:00 AM - 9:00 AM)"
-                    fgroup-class="col-md-12" value="{{ old('nombre', $bloqueHorario->nombre) }}" required>
-                    <x-slot name="prependSlot">
-                        <div class="input-group-text bg-gradient-navy">
-                            <i class="fas fa-tag"></i>
-                        </div>
-                    </x-slot>
-                </x-adminlte-input>
-            </div>
+            <section class="src-form-section">
+                <header class="src-form-section-heading">
+                    <span><i class="far fa-clock" aria-hidden="true"></i></span>
+                    <div><h2>Datos del bloque</h2><p>Modifica la franja horaria y su disponibilidad para reservas.</p></div>
+                </header>
 
-            <div class="row">
-                {{-- Hora Inicio --}}
-                <x-adminlte-input name="hora_inicio" label="Hora de Inicio" type="time"
-                    fgroup-class="col-md-6" value="{{ old('hora_inicio', $bloqueHorario->hora_inicio) }}" required>
-                    <x-slot name="prependSlot">
-                        <div class="input-group-text bg-gradient-info text-white">
-                            <i class="far fa-clock"></i>
-                        </div>
-                    </x-slot>
-                </x-adminlte-input>
-
-                {{-- Hora Fin --}}
-                <x-adminlte-input name="hora_fin" label="Hora de Fin" type="time"
-                    fgroup-class="col-md-6" value="{{ old('hora_fin', $bloqueHorario->hora_fin) }}" required>
-                    <x-slot name="prependSlot">
-                        <div class="input-group-text bg-gradient-danger text-white">
-                            <i class="far fa-clock"></i>
-                        </div>
-                    </x-slot>
-                </x-adminlte-input>
-            </div>
-
-            <div class="row">
-                {{-- Activo (Checkbox) --}}
-                <div class="form-group col-md-6">
-                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success mt-4">
-                        <input type="checkbox" class="custom-control-input" id="activo" name="activo" value="1" {{ old('activo', $bloqueHorario->activo) ? 'checked' : '' }}>
-                        <label class="custom-control-label font-weight-bold" for="activo">Bloque Horario Activo para Reservas</label>
+                <div class="src-form-grid">
+                    <div class="src-form-field src-form-field-full">
+                        <label for="nombre">Nombre del bloque <span aria-hidden="true">*</span></label>
+                        <input class="src-form-control" id="nombre" name="nombre" type="text" value="{{ old('nombre', $bloqueHorario->nombre) }}" placeholder="Ej. Bloque 1 - Mañana" required>
+                        @error('nombre')<span class="src-form-error">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="src-form-field">
+                        <label for="hora_inicio">Hora de inicio <span aria-hidden="true">*</span></label>
+                        <input class="src-form-control" id="hora_inicio" name="hora_inicio" type="time" value="{{ substr((string) old('hora_inicio', $bloqueHorario->hora_inicio), 0, 5) }}" required>
+                        @error('hora_inicio')<span class="src-form-error">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="src-form-field">
+                        <label for="hora_fin">Hora de fin <span aria-hidden="true">*</span></label>
+                        <input class="src-form-control" id="hora_fin" name="hora_fin" type="time" value="{{ substr((string) old('hora_fin', $bloqueHorario->hora_fin), 0, 5) }}" required>
+                        @error('hora_fin')<span class="src-form-error">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="src-form-field src-form-field-full">
+                        <label class="src-form-checkbox">
+                            <input id="activo" name="activo" type="checkbox" value="1" {{ old('activo', $bloqueHorario->activo) ? 'checked' : '' }}>
+                            <span><strong>Bloque activo</strong><small>Permitir que este horario esté disponible para nuevas reservas.</small></span>
+                        </label>
+                        @error('activo')<span class="src-form-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="row mt-3">
-                <div class="form-group col-md-6">
-                    <x-adminlte-button class="btn btn-warning text-white mr-2" type="submit" label="Actualizar Bloque" theme="warning"
-                        icon="fas fa-sync-alt" />
-                    <a href="{{ route('bloques-horarios.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-undo"></i> Regresar
-                    </a>
-                </div>
+            <div class="src-form-actions">
+                <button class="src-catalog-primary-action" type="submit"><i class="fas fa-check" aria-hidden="true"></i> Actualizar bloque</button>
+                <a class="src-catalog-secondary-action" href="{{ route('bloques-horarios.index') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</a>
             </div>
         </form>
-    </x-adminlte-card>
-@stop
-
-@section('footer')
-    <div style="max-height: 55px;" class="text-center text-muted">
-        <p>
-            <img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" alt="Logo UP" style="max-height: 70px; border-radius: 15px" class="mr-2"> 
-            © {{ date('Y') }} S.R.C - Sistema de Reserva de Computadores - Universidad de Pamplona Sede Villa del Rosario. Todos los derechos reservados.
-        </p>
     </div>
 @stop

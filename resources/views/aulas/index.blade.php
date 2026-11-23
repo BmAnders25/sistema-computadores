@@ -3,173 +3,152 @@
 @section('title', 'Aulas y Laboratorios')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Administración de Aulas y Laboratorios</h1>
+    <x-src-page-hero
+        eyebrow="Inventario"
+        title="Aulas y laboratorios"
+        description="Administra los espacios institucionales, su capacidad y los equipos asociados."
+        icon="fas fa-building" />
 @stop
 
 @section('content')
+    @php
+        $catalogHeaders = ['Bloque', 'Laboratorio / Aula', 'Capacidad', 'Equipos', 'Estado'];
+    @endphp
 
-    <x-adminlte-card title="Listado de Aulas y Laboratorios" theme="primary" theme-mode="outline">
-        @can('crear-aulas')
-            <a class="btn btn-primary mb-3" href="{{ route('aulas.create') }}">
-                <i class="fa fa-plus-circle mr-1"></i> Nueva Aula / Laboratorio
-            </a>
-        @endcan
+    <div
+        class="src-catalog-page"
+        data-catalog-page
+        data-catalog-title="Aulas y laboratorios · S.R.C"
+        data-catalog-filename="aulas-laboratorios"
+    >
+        @if (session('success'))
+            <div class="alert alert-success" role="status">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+        @endif
 
-        @php
-            $heads = [
-                'ID',
-                'Bloque',
-                'Nombre / Laboratorio',
-                'Capacidad',
-                'Equipos Asociados',
-                'Estado',
-                'Acciones'
-            ];
-            $config['language'] = ['url' => asset('vendor/datatables/es-CO.json')];
-        @endphp
+        <div class="src-catalog-create-row">
+            @can('crear-aulas')
+                <a class="src-catalog-create-button" href="{{ route('aulas.create') }}">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nueva Aula / Laboratorio
+                </a>
+            @endcan
+        </div>
 
-        <x-adminlte-datatable id="aulasTable" :heads="$heads" head-theme="dark"
-            :config="$config" striped hoverable with-buttons responsive>
+        <x-src-catalog-toolbar :filters="[
+            ['label' => 'Todas', 'value' => 'all', 'query' => '', 'count' => $totalAulas],
+            ['label' => 'Activas', 'value' => 'active', 'query' => 'activo', 'count' => $activas],
+            ['label' => 'Mantenimiento', 'value' => 'maintenance', 'query' => 'mantenimiento', 'count' => $mantenimiento],
+            ['label' => 'Inactivas', 'value' => 'inactive', 'query' => 'inactivo', 'count' => $inactivas],
+        ]" :selected-filter="request()->query('estado', '')" search-placeholder="Buscar por bloque, laboratorio...">
+        </x-src-catalog-toolbar>
 
-            @foreach ($aulas as $aula)
-                <tr>
-                    {{-- ID --}}
-                    <td>{{ $aula->id }}</td>
-
-                    {{-- Bloque --}}
-                    <td>
-                        <span class="badge bg-purple px-2 py-1 text-md">{{ $aula->bloque }}</span>
-                    </td>
-
-                    {{-- Nombre --}}
-                    <td><strong>{{ $aula->nombre }}</strong></td>
-
-                    {{-- Capacidad --}}
-                    <td>
-                        <span class="text-dark font-weight-bold">
-                            <i class="fas fa-users text-info mr-1"></i>{{ $aula->capacidad ?? 'N/A' }} estudiantes
+        <section
+            class="src-catalog-grid"
+            data-catalog-grid
+            data-catalog-headers="{{ json_encode($catalogHeaders) }}"
+            aria-label="Aulas y laboratorios registrados"
+        >
+            @forelse ($aulas as $aula)
+                @php
+                    $estadoFiltro = in_array($aula->estado, ['activo', 'disponible'], true)
+                        ? 'active'
+                        : ($aula->estado === 'mantenimiento' ? 'maintenance' : 'inactive');
+                    $estadoLabel = in_array($aula->estado, ['activo', 'disponible'], true)
+                        ? 'Activa'
+                        : ($aula->estado === 'mantenimiento' ? 'Mantenimiento' : 'Inactiva');
+                    $estadoClass = $estadoFiltro === 'active' ? 'active' : ($estadoFiltro === 'maintenance' ? 'pending' : 'inactive');
+                    $equipoCount = $aula->computadores_count ?? 0;
+                    $capacidadLabel = $aula->capacidad ? $aula->capacidad . ' estudiantes' : 'No especificada';
+                    $searchText = \Illuminate\Support\Str::lower($aula->bloque . ' ' . $aula->nombre);
+                    $catalogRecord = [$aula->bloque, $aula->nombre, $capacidadLabel, $equipoCount, $estadoLabel];
+                @endphp
+                <article
+                    class="src-catalog-card"
+                    data-catalog-card
+                    data-catalog-status="{{ $estadoFiltro }}"
+                    data-catalog-search="{{ $searchText }}"
+                    data-catalog-record="{{ json_encode($catalogRecord, JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP) }}"
+                >
+                    <header class="src-catalog-card-header">
+                        <div class="src-catalog-card-heading">
+                            <span class="src-catalog-icon"><i class="fas fa-door-open" aria-hidden="true"></i></span>
+                            <div>
+                                <h2>{{ $aula->nombre }}</h2>
+                                <p>Espacio académico</p>
+                            </div>
+                        </div>
+                        <span class="src-catalog-status src-catalog-status-{{ $estadoClass }}">
+                            <span aria-hidden="true"></span>{{ $estadoLabel }}
                         </span>
-                    </td>
+                    </header>
 
-                    {{-- Computadores asociados --}}
-                    <td>
-                        <span class="badge bg-secondary px-2 py-1">
-                            <i class="fas fa-desktop mr-1"></i>{{ $aula->computadores_count ?? $aula->computadores()->count() }} equipos
-                        </span>
-                    </td>
+                    <div class="src-catalog-card-body">
+                        <div class="src-catalog-facts">
+                            <div class="src-catalog-fact">
+                                <span>Bloque</span>
+                                <strong>{{ $aula->bloque }}</strong>
+                            </div>
+                            <div class="src-catalog-fact">
+                                <span>Capacidad</span>
+                                <strong>{{ $capacidadLabel }}</strong>
+                            </div>
+                            <div class="src-catalog-fact">
+                                <span>Equipos asociados</span>
+                                <strong>{{ $equipoCount }} computadores</strong>
+                            </div>
+                            <div class="src-catalog-fact">
+                                <span>Estado del espacio</span>
+                                <strong>{{ $estadoLabel }}</strong>
+                            </div>
+                        </div>
+                    </div>
 
-                    {{-- Estado --}}
-                    <td>
-                        @if ($aula->estado == 'activo' || $aula->estado == 'disponible')
-                            <span class="badge bg-gradient-success px-2 py-1 text-md"><i class="fas fa-check-circle mr-1"></i> Activo</span>
-                        @elseif ($aula->estado == 'mantenimiento')
-                            <span class="badge bg-gradient-warning px-2 py-1 text-md"><i class="fas fa-tools mr-1"></i> Mantenimiento</span>
-                        @else
-                            <span class="badge bg-gradient-danger px-2 py-1 text-md"><i class="fas fa-ban mr-1"></i> Inactivo</span>
-                        @endif
-                    </td>
-
-                    {{-- Acciones --}}
-                    <td class="text-center align-middle text-nowrap">
-                        <div class="d-inline-flex align-items-center">
-                            {{-- Botón Ver --}}
-                            <a class="btn bg-gradient-info btn-sm mr-1" href="{{ route('aulas.show', $aula->id) }}" title="Ver detalles">
-                                <i class="far fa-eye fa-fw text-white"></i>
-                            </a>
-
-                            {{-- Botón Editar --}}
+                    <footer class="src-catalog-card-footer">
+                        <span class="src-catalog-card-note"><i class="fas fa-building mr-1" aria-hidden="true"></i> {{ $aula->bloque }} · {{ $aula->nombre }}</span>
+                        <div class="src-catalog-actions">
+                            <a href="{{ route('aulas.show', $aula->id) }}"><i class="far fa-eye" aria-hidden="true"></i> Ver</a>
                             @can('editar-aulas')
-                            <a class="btn bg-gradient-yellow btn-sm mr-1" href="{{ route('aulas.edit', $aula->id) }}" title="Editar">
-                                <i class="fas fa-pencil-alt fa-fw text-black"></i>
-                            </a>
+                                <a class="src-catalog-edit" href="{{ route('aulas.edit', $aula->id) }}"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Editar</a>
                             @endcan
-
-                            {{-- Botón Eliminar --}}
                             @can('borrar-aulas')
-                            <form method="POST" action="{{ route('aulas.destroy', $aula->id) }}" style="display:inline-block;" class="delete-form m-0 p-0">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" class="btn bg-gradient-danger btn-sm delete-button" title="Eliminar aula">
-                                    <i class="far fa-trash-alt fa-fw text-white"></i>
-                                </button>
-                            </form>
+                                <form method="POST" action="{{ route('aulas.destroy', $aula->id) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="button"
+                                        class="src-catalog-delete"
+                                        data-catalog-delete
+                                        data-confirm-title="¿Eliminar aula o laboratorio?"
+                                        data-confirm-text="No se puede eliminar si tiene equipos asociados."
+                                        data-confirm-button="Sí, eliminar"
+                                    ><i class="far fa-trash-alt" aria-hidden="true"></i> Eliminar</button>
+                                </form>
                             @endcan
                         </div>
-                    </td>
-                </tr>
-            @endforeach
-        </x-adminlte-datatable>
-    </x-adminlte-card>
-@stop
+                    </footer>
+                </article>
+            @empty
+                <div class="src-catalog-empty">
+                    <i class="fas fa-building" aria-hidden="true"></i>
+                    <strong>No hay aulas o laboratorios registrados</strong>
+                    <span>Los espacios académicos que agregues aparecerán aquí.</span>
+                </div>
+            @endforelse
 
-@section('css')
-<style>
-    #aulasTable tbody td:last-child {
-        white-space: nowrap !important;
-        width: 1% !important;
-    }
-    #aulasTable tbody td {
-        vertical-align: middle !important;
-        padding: 0.75rem 0.5rem !important;
-    }
-</style>
-@stop
-
-@section('footer')
-    <div class="text-center text-muted">
-        <p>
-            <img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" alt="Logo UP" style="max-height: 70px; border-radius: 15px" class="mr-2"> 
-            © {{ date('Y') }} S.R.C - Sistema de Reserva de Computadores - Universidad de Pamplona Sede Villa del Rosario. Todos los derechos reservados.
-        </p>
+            @if ($aulas->isNotEmpty())
+                <div class="src-catalog-empty" data-catalog-filter-empty hidden>
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <strong>No encontramos espacios</strong>
+                    <span>Prueba con otros filtros o términos de búsqueda.</span>
+                </div>
+            @endif
+        </section>
+        <x-src-pagination :items="$aulas" />
     </div>
 @stop
 
 @section('js')
-    @if ($message = Session::get('success'))
-        <script>
-            Swal.fire({
-                title: "¡Operación Exitosa!",
-                text: "{{ $message }}",
-                timer: 2500,
-                icon: "success",
-                confirmButtonColor: '#3085d6',
-                buttonsStyling: true
-            });
-        </script>
-    @endif
-
-    <script>
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.delete-button')) {
-                var button = e.target.closest('.delete-button');
-                var form = button.closest('form');
-                Swal.fire({
-                    title: "¿Eliminar aula o laboratorio?",
-                    text: "Esta acción no se puede deshacer si tiene registros asociados.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: "Sí, eliminar",
-                    cancelButtonText: "Cancelar",
-                    buttonsStyling: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            }
-        });
-    </script>
-
-    @if ($message = Session::get('error'))
-        <script>
-            Swal.fire({ 
-                title: "Acción no permitida", 
-                text: "{{ $message }}", 
-                icon: "error",
-                confirmButtonColor: '#3085d6'
-            });
-        </script>
-    @endif
+    <script src="{{ asset('js/src-catalog.js') }}"></script>
 @stop

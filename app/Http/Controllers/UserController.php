@@ -19,10 +19,40 @@ class UserController extends Controller
         $this->middleware('permission:borrar-usuarios', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('roles')->get();
-        return view('users.index', compact('users'));
+        $query = User::query()->with('roles');
+        $search = trim((string) $request->query('search', ''));
+
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $query->where(function ($query) use ($like) {
+                $query->where('name', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('codigo_institucional', 'like', $like)
+                    ->orWhere('programa', 'like', $like)
+                    ->orWhereHas('roles', function ($roles) use ($like) {
+                        $roles->where('name', 'like', $like);
+                    });
+            });
+        }
+
+        $estado = $request->query('estado');
+        if ($estado === 'activo') {
+            $query->where('estado', 'activo');
+        } elseif ($estado === 'inactivos') {
+            $query->where('estado', '!=', 'activo');
+        }
+
+        $totalUsuarios = User::count();
+        $usuariosActivos = User::where('estado', 'activo')->count();
+        $usuariosInactivos = $totalUsuarios - $usuariosActivos;
+
+        $users = $query->orderBy('name')
+            ->paginate($this->catalogPerPage($request))
+            ->withQueryString();
+
+        return view('users.index', compact('users', 'totalUsuarios', 'usuariosActivos', 'usuariosInactivos'));
     }
 
     public function create()

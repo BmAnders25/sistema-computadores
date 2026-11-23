@@ -15,11 +15,36 @@ class AulaController extends Controller
         $this->middleware('permission:borrar-aulas', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Cargamos la cantidad de computadores asociados para mostrar métricas si se desea
-        $aulas = Aula::withCount('computadores')->get();
-        return view('aulas.index', compact('aulas'));
+        $query = Aula::query()->withCount('computadores');
+        $search = trim((string) $request->query('search', ''));
+
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $query->where(function ($query) use ($like) {
+                $query->where('nombre', 'like', $like)
+                    ->orWhere('bloque', 'like', $like);
+            });
+        }
+
+        $estado = $request->query('estado');
+        if ($estado === 'activo') {
+            $query->whereIn('estado', ['activo', 'disponible']);
+        } elseif (in_array($estado, ['inactivo', 'mantenimiento'], true)) {
+            $query->where('estado', $estado);
+        }
+
+        $totalAulas = Aula::count();
+        $activas = Aula::whereIn('estado', ['activo', 'disponible'])->count();
+        $mantenimiento = Aula::where('estado', 'mantenimiento')->count();
+        $inactivas = $totalAulas - $activas - $mantenimiento;
+
+        $aulas = $query->orderBy('bloque')->orderBy('nombre')
+            ->paginate($this->catalogPerPage($request))
+            ->withQueryString();
+
+        return view('aulas.index', compact('aulas', 'totalAulas', 'activas', 'mantenimiento', 'inactivas'));
     }
 
     public function create()
@@ -78,12 +103,13 @@ class AulaController extends Controller
             'bloque' => 'required|string|max:50',
             'nombre' => 'required|string|max:100',
             'capacidad' => 'nullable|integer|min:1|max:200',
-            'estado' => 'required|string|max:50',
+            'estado' => 'required|in:activo,inactivo,mantenimiento',
         ], [
             'bloque.required' => 'El bloque es obligatorio.',
             'nombre.required' => 'El nombre del laboratorio o aula es obligatorio.',
             'capacidad.integer' => 'La capacidad debe ser un número entero válido.',
             'estado.required' => 'El estado del aula es obligatorio.',
+            'estado.in' => 'El estado seleccionado no es válido.',
         ]);
     }
 }

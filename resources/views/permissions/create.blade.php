@@ -1,40 +1,39 @@
 @extends('adminlte::page')
 
-@section('title', 'S.O.A.H')
+@section('title', 'Crear Permiso')
 
 @section('content_header')
-<h1 class="m-0 text-dark">Registrar Permiso</h1>
+    <x-src-page-hero
+        eyebrow="Seguridad · Permisos"
+        title="Crear permiso"
+        description="Registra una capacidad que después podrás asignar a uno o más roles."
+        icon="fas fa-key" />
 @stop
 
 @section('content')
-<x-adminlte-card>
-    <form method="POST" action="{{ route('permissions.store') }}" enctype="multipart/form-data">
-        @csrf
-        <div class="row">
-            <x-adminlte-input name="name" type="text" label="Nombre Permiso" placeholder="Nombre Permiso"
-                fgroup-class="col-md-6" autocomplete="name" />
-        </div>
+    <div class="src-form-page">
+        <form method="POST" action="{{ route('permissions.store') }}" enctype="multipart/form-data">
+            @csrf
+            <x-src-validation-errors />
 
-        <div class="row">
-            <div class="form-group col-md-6">
-                <x-adminlte-button class="btn btn-primary mr-2" type="submit" label="Guardar Permiso" theme="primary"
-                    icon="fas fa-save" />
-                <a href="{{ route('permissions.index') }}" class="btn btn-secondary mr-2"><i class="fas fa-undo"></i>
-                    Cancelar</a>
+            <section class="src-form-section">
+                <header class="src-form-section-heading">
+                    <span><i class="fas fa-key" aria-hidden="true"></i></span>
+                    <div><h2>Identificación del permiso</h2><p>Utiliza un nombre claro y único para esta capacidad.</p></div>
+                </header>
+                <div class="src-form-grid">
+                    <div class="src-form-field src-form-field-full">
+                        <label for="name">Nombre del permiso <span aria-hidden="true">*</span></label>
+                        <input class="src-form-control" id="name" name="name" type="text" value="{{ old('name') }}" placeholder="Ej. ver-reportes" autocomplete="name" required>
+                        @error('name')<span class="src-form-error">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+            </section>
+
+            <div class="src-form-actions">
+                <button class="src-catalog-primary-action" type="submit"><i class="fas fa-check" aria-hidden="true"></i> Guardar permiso</button>
+                <a class="src-catalog-secondary-action" href="{{ route('permissions.index') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</a>
             </div>
-        </div>
-    </form>
-</x-adminlte-card>
-
-@if (session('success'))
-<div class="alert alert-success">
-    {{ session('success') }}
-</div>
-@endif
-@stop
-
-@section('footer')
-    <footer>
-        <p><img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" width="4%" style="border-radius: 15px" alt="Logo S.O.AH"> © {{ date('Y') }} S.O.A.H.  Sistema De Organización y Administración Hotelera . Todos los derechos reservados.</p>
-    </footer>
+        </form>
+    </div>
 @stop

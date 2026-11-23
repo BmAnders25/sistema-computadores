@@ -20,10 +20,22 @@ class RolController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::all();
-        return view('roles.index',compact('roles'));
+        $query = Role::query()->withCount(['users', 'permissions']);
+        $search = trim((string) $request->query('search', ''));
+
+        if ($search !== '') {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        $totalRoles = Role::count();
+
+        $roles = $query->orderBy('name')
+            ->paginate($this->catalogPerPage($request))
+            ->withQueryString();
+
+        return view('roles.index', compact('roles', 'totalRoles'));
     }
 
     /**

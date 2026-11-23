@@ -3,183 +3,193 @@
 @section('title', 'Detalles del Computador')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Detalles del Computador: {{ $computador->serial }}</h1>
+    @php
+        $nombreEquipo = trim(($computador->marca ?? 'Computador') . ' ' . ($computador->modelo ?? ''));
+        $bloqueAula = $computador->aula->bloque ?? $computador->bloque ?? 'Sin bloque';
+        $nombreAula = $computador->aula->nombre ?? $computador->laboratorio_aula ?? 'Sin laboratorio';
+        $tipoEquipo = ucfirst(str_replace('_', ' ', $computador->tipo_equipo ?? 'equipo'));
+        $estadoLabel = match ($computador->estado) {
+            'disponible' => 'Disponible',
+            'prestado' => 'En uso / Prestado',
+            'reservado' => 'Reservado',
+            'mantenimiento' => 'Mantenimiento',
+            default => 'Inactivo',
+        };
+        $estadoClass = match ($computador->estado) {
+            'disponible' => 'available',
+            'prestado', 'reservado' => 'in-use',
+            'mantenimiento' => 'maintenance',
+            default => 'inactive',
+        };
+        $condicionLabel = ucfirst($computador->condicion ?? 'Sin dato');
+    @endphp
+
+    <section class="src-computer-detail-heading">
+        <nav class="src-computer-breadcrumb" aria-label="Migas de pan">
+            <a href="{{ route('home') }}">S.R.C</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ route('computadores.index') }}">Inventario</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{{ $computador->serial }}</span>
+        </nav>
+        <div class="src-computer-detail-title-row">
+            <div class="src-computer-detail-title">
+                <h1>{{ $nombreEquipo }}</h1>
+                <span>Serial: {{ $computador->serial }}</span>
+            </div>
+            <div class="src-computer-detail-actions">
+                @can('editar-computadores')
+                    <a class="src-computer-primary-button" href="{{ route('computadores.edit', $computador->id) }}">
+                        <i class="fas fa-pencil-alt" aria-hidden="true"></i> Editar equipo
+                    </a>
+                @endcan
+                <a class="src-computer-secondary-button" href="{{ route('computadores.index') }}">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inventario
+                </a>
+            </div>
+        </div>
+    </section>
 @stop
 
 @section('content')
-<div class="row">
-    {{-- Columna de Resumen General del Equipo --}}
-    <div class="col-md-4">
-        <div class="card card-outline card-primary shadow">
-            <div class="card-header text-center">
-                <h3 class="card-title font-weight-bold"><i class="fas fa-desktop mr-1"></i> Ficha Técnica</h3>
+    <div class="src-computer-detail-layout">
+        <aside class="src-computer-summary-card">
+            <div class="src-computer-summary-icon" aria-hidden="true">
+                <i class="fas fa-desktop"></i>
             </div>
-            <div class="card-body text-center bg-light">
-                <div class="mb-3">
-                    <i class="fas fa-laptop-code fa-5x text-primary"></i>
-                </div>
-                <h4 class="font-weight-bold text-dark mb-1">{{ $computador->marca }}</h4>
-                <p class="text-muted mb-2">{{ $computador->modelo ?? 'Sin Modelo Esp.' }}</p>
-                <span class="badge badge-secondary text-uppercase px-3 py-1 mb-3">
-                    {{ str_replace('_', ' ', $computador->tipo_equipo) }}
+            <h2>{{ $nombreEquipo }}</h2>
+            <span class="src-computer-summary-category">{{ $tipoEquipo }}</span>
+
+            <div class="src-computer-summary-badges">
+                <span class="src-computer-status src-computer-status-{{ $estadoClass }}">
+                    <span aria-hidden="true"></span>{{ $estadoLabel }}
                 </span>
+                <span class="src-computer-condition src-computer-condition-{{ $computador->condicion ?? 'unknown' }}">
+                    Condición: {{ $condicionLabel }}
+                </span>
+            </div>
 
-                <hr>
+            <div class="src-computer-summary-location">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                {{ $bloqueAula }} · {{ $nombreAula }}
+            </div>
 
-                {{-- Código UUID Auto-generado --}}
-                <div class="text-left">
-                    <label class="text-muted small mb-1 d-block"><i class="fas fa-qrcode mr-1"></i> Código Único (UUID):</label>
-                    <code class="text-dark bg-white p-2 rounded border d-block text-break font-weight-bold small">
-                        {{ $computador->codigo }}
-                    </code>
+            <div class="src-computer-uuid">
+                <label for="computerUuid">Código Único (UUID)</label>
+                <div>
+                    <code id="computerUuid">{{ $computador->codigo }}</code>
+                    <button
+                        type="button"
+                        data-copy-computer-uuid="{{ $computador->codigo }}"
+                        aria-label="Copiar UUID"
+                        title="Copiar UUID"
+                    >
+                        <i class="far fa-copy" aria-hidden="true"></i> Copiar
+                    </button>
                 </div>
             </div>
+
+            <div class="src-computer-audit">
+                <span>Registrado: {{ optional($computador->created_at)->format('d/m/Y') ?? 'Sin fecha' }}</span>
+                <span>Actualizado: {{ optional($computador->updated_at)->format('d/m/Y') ?? 'Sin fecha' }}</span>
+            </div>
+        </aside>
+
+        <div class="src-computer-detail-main">
+            <section class="src-computer-detail-card">
+                <header>
+                    <span class="src-computer-detail-card-icon"><i class="fas fa-microchip" aria-hidden="true"></i></span>
+                    <h2>Ficha técnica y especificaciones</h2>
+                </header>
+                <div class="src-computer-specification-grid">
+                    <article>
+                        <span class="src-computer-specification-icon"><i class="fas fa-barcode" aria-hidden="true"></i></span>
+                        <div><small>Número de Serial</small><strong>{{ $computador->serial }}</strong></div>
+                    </article>
+                    <article>
+                        <span class="src-computer-specification-icon"><i class="fas fa-map-marker-alt" aria-hidden="true"></i></span>
+                        <div><small>Ubicación</small><strong>{{ $bloqueAula }} · {{ $nombreAula }}</strong></div>
+                    </article>
+                    <article>
+                        <span class="src-computer-specification-icon"><i class="fas fa-microchip" aria-hidden="true"></i></span>
+                        <div><small>Procesador</small><strong>{{ $computador->procesador ?? 'No especificado' }}</strong></div>
+                    </article>
+                    <article>
+                        <span class="src-computer-specification-icon"><i class="fas fa-memory" aria-hidden="true"></i></span>
+                        <div><small>Memoria RAM</small><strong>{{ $computador->ram_gb ? $computador->ram_gb . ' GB RAM' : 'No especificada' }}</strong></div>
+                    </article>
+                    <article>
+                        <span class="src-computer-specification-icon"><i class="fas fa-hdd" aria-hidden="true"></i></span>
+                        <div><small>Almacenamiento</small><strong>{{ $computador->almacenamiento ?? 'No especificado' }}</strong></div>
+                    </article>
+                    <article>
+                        <span class="src-computer-specification-icon"><i class="fab fa-windows" aria-hidden="true"></i></span>
+                        <div><small>Sistema Operativo</small><strong>{{ $computador->sistema_operativo ?? 'No especificado' }}</strong></div>
+                    </article>
+                    <article>
+                        <span class="src-computer-specification-icon"><i class="fas fa-desktop" aria-hidden="true"></i></span>
+                        <div><small>Tipo de Equipo</small><strong>Computador {{ $tipoEquipo }}</strong></div>
+                    </article>
+                    <article>
+                        <span class="src-computer-specification-icon"><i class="fas fa-award" aria-hidden="true"></i></span>
+                        <div><small>Condición Física</small><strong>{{ $condicionLabel }}</strong></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="src-computer-detail-card src-computer-observations-card">
+                <header>
+                    <span class="src-computer-detail-card-icon"><i class="far fa-comment-alt" aria-hidden="true"></i></span>
+                    <h2>Observaciones y notas</h2>
+                </header>
+                <div class="src-computer-observations">
+                    <span><i class="far fa-comment-alt" aria-hidden="true"></i> Observaciones</span>
+                    <p>{{ $computador->observaciones ?: 'Sin observaciones adicionales.' }}</p>
+                </div>
+            </section>
         </div>
     </div>
-
-    {{-- Columna de Bloques de Información (Info Boxes) --}}
-    <div class="col-md-8">
-        <div class="row">
-            {{-- Número de Serial --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Número de Serial" 
-                    text="{{ $computador->serial }}" 
-                    icon="fas fa-barcode" 
-                    theme="dark"/>
-            </div>
-
-            {{-- Estado del Equipo (Lógica Dinámica) --}}
-            <div class="col-md-6">
-                @php
-                    $estadoTexto = ucfirst($computador->estado);
-                    switch ($computador->estado) {
-                        case 'disponible':
-                            $iconEstado = 'fas fa-check-circle';
-                            $themeEstado = 'success';
-                            break;
-                        case 'prestado':
-                            $iconEstado = 'fas fa-hand-holding';
-                            $themeEstado = 'primary';
-                            break;
-                        case 'reservado':
-                            $iconEstado = 'fas fa-bookmark';
-                            $themeEstado = 'info';
-                            break;
-                        case 'mantenimiento':
-                            $iconEstado = 'fas fa-tools';
-                            $themeEstado = 'warning';
-                            break;
-                        default:
-                            $iconEstado = 'fas fa-ban';
-                            $themeEstado = 'danger';
-                            break;
-                    }
-                @endphp
-
-                <x-adminlte-info-box 
-                    title="Estado de Disponibilidad" 
-                    text="{{ $estadoTexto }}"
-                    icon="{{ $iconEstado }}" 
-                    theme="{{ $themeEstado }}" 
-                />
-            </div>
-        </div>
-
-        <div class="row">
-            {{-- Ubicación Relacional: Bloque y Aula --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Bloque" 
-                    text="{{ $computador->aula->bloque ?? 'No asignado' }}" 
-                    icon="fas fa-building" 
-                    theme="navy"/>
-            </div>
-
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Laboratorio / Aula" 
-                    text="{{ $computador->aula->nombre ?? 'No asignado' }}" 
-                    icon="fas fa-door-open" 
-                    theme="purple"/>
-            </div>
-
-            {{-- Componentes Hardware --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Procesador" 
-                    text="{{ $computador->procesador ?? 'No especificado' }}" 
-                    icon="fas fa-microchip" 
-                    theme="cyan"/>
-            </div>
-
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Memoria RAM" 
-                    text="{{ $computador->ram_gb ? $computador->ram_gb . ' GB RAM' : 'No especificada' }}" 
-                    icon="fas fa-memory" 
-                    theme="teal"/>
-            </div>
-
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Almacenamiento" 
-                    text="{{ $computador->almacenamiento ?? 'No especificado' }}" 
-                    icon="fas fa-hdd" 
-                    theme="olive"/>
-            </div>
-
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Sistema Operativo" 
-                    text="{{ $computador->sistema_operativo ?? 'No especificado' }}" 
-                    icon="fab fa-windows" 
-                    theme="indigo"/>
-            </div>
-
-            {{-- Condición Física (Lógica Dinámica) --}}
-            <div class="col-md-6">
-                @php
-                    $condicionTexto = ucfirst($computador->condicion);
-                    switch ($computador->condicion) {
-                        case 'excelente':
-                            $themeCondicion = 'success';
-                            break;
-                        case 'bueno':
-                            $themeCondicion = 'info';
-                            break;
-                        case 'regular':
-                            $themeCondicion = 'warning';
-                            break;
-                        default:
-                            $themeCondicion = 'danger';
-                            break;
-                    }
-                @endphp
-
-                <x-adminlte-info-box title="Condición Física" 
-                    text="{{ $condicionTexto }}" 
-                    icon="fas fa-star" 
-                    theme="{{ $themeCondicion }}"/>
-            </div>
-
-            {{-- Observaciones --}}
-            <div class="col-md-6">
-                <x-adminlte-info-box title="Observaciones" 
-                    text="{{ $computador->observaciones ?? 'Sin observaciones adicionales' }}" 
-                    icon="fas fa-comment-alt" 
-                    theme="lightblue"/>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Botones de Acción --}}
-<div class="mt-3 d-flex justify-content-between">
-    <a href="{{ route('computadores.index') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Regresar
-    </a>
-</div>
 @stop
 
-@section('footer')
-    <div style="max-height: 55px;" class="text-center text-muted">
-        <p>
-            <img src="{{ asset('vendor/adminlte/dist/img/logo.png') }}" alt="Logo UP" style="max-height: 70px; border-radius: 15px" class="mr-2"> 
-            © {{ date('Y') }} S.R.C - Sistema de Reserva de Computadores - Universidad de Pamplona Sede Villa del Rosario. Todos los derechos reservados.
-        </p>
-    </div>
+@section('js')
+    <script>
+        document.querySelectorAll('[data-copy-computer-uuid]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var uuid = button.dataset.copyComputerUuid;
+                var copied = function () {
+                    button.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> Copiado';
+                    window.setTimeout(function () {
+                        button.innerHTML = '<i class="far fa-copy" aria-hidden="true"></i> Copiar';
+                    }, 1500);
+                };
+                var failed = function () {
+                    Swal.fire({
+                        title: 'No se pudo copiar',
+                        text: 'Verifica los permisos del portapapeles e inténtalo de nuevo.',
+                        icon: 'error',
+                        confirmButtonColor: '#a6262e'
+                    });
+                };
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(uuid).then(copied).catch(failed);
+                    return;
+                }
+
+                var input = document.createElement('textarea');
+                input.value = uuid;
+                input.setAttribute('readonly', '');
+                input.style.position = 'absolute';
+                input.style.left = '-9999px';
+                document.body.appendChild(input);
+                input.select();
+                var success = document.execCommand('copy');
+                input.remove();
+                if (success) copied();
+                else failed();
+            });
+        });
+    </script>
 @stop
+
+

@@ -27,7 +27,6 @@ class NotificacionController extends Controller
         return response()->json([
             'label' => $usuario->unreadNotifications()->count(),
             'label_color' => 'danger',
-            'icon_color' => 'white',
             'dropdown' => view('notificaciones._dropdown', compact('notificaciones'))->render(),
         ]);
     }

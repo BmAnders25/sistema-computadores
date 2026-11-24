@@ -567,6 +567,193 @@ body.register-page {
     border-radius: 0 0 16px 16px;
 }
 
+.two-factor-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1.25rem;
+    background: var(--src-page) !important;
+}
+
+.two-factor-page .login-box {
+    width: min(440px, calc(100vw - 32px)) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+    background: #fff !important;
+    border: 1px solid var(--src-border) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 18px 48px rgba(67, 33, 37, 0.14) !important;
+}
+
+.two-factor-page .login-logo {
+    margin: 0 !important;
+    padding: 1.25rem 1.5rem 1rem;
+}
+
+.two-factor-page .login-logo > a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    color: #334155;
+    font-size: 2rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.two-factor-page .login-logo img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.two-factor-page .login-box .card {
+    margin: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.two-factor-page .card-header {
+    padding: 1rem 1.25rem;
+    background: #fff;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--src-border);
+}
+
+.two-factor-page .card-title {
+    float: none;
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.two-factor-page .login-card-body {
+    padding: 1.5rem !important;
+    background: #fff !important;
+    border-radius: 0 !important;
+}
+
+.two-factor-page .auth-body-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+}
+
+.two-factor-page .instruction-text {
+    margin: 0 0 1.25rem;
+    padding: 0.85rem 1rem;
+    color: #334155 !important;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.two-factor-page .form-control-code {
+    height: 56px;
+    color: #1f2937 !important;
+    background: #fff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.45em;
+    text-align: center;
+}
+
+.two-factor-page .form-control-code::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+.two-factor-page .form-control-code:focus {
+    border-color: var(--src-red) !important;
+    outline: 3px solid rgba(166, 38, 46, 0.18);
+    outline-offset: 2px;
+    box-shadow: none !important;
+}
+
+.two-factor-page .btn-verificar {
+    width: 100%;
+    min-height: 48px;
+    color: #fff !important;
+    background: var(--src-red) !important;
+    border: 1px solid var(--src-red) !important;
+    border-radius: 10px !important;
+    font-weight: 700;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.two-factor-page .btn-verificar:hover,
+.two-factor-page .btn-verificar:focus-visible {
+    color: #fff !important;
+    background: var(--src-wine) !important;
+    border-color: var(--src-wine) !important;
+}
+
+.two-factor-page .two-factor-resend-form {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.two-factor-page .btn-resend-link {
+    max-width: 100%;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    color: #475569 !important;
+    background: transparent !important;
+    border: 0 !important;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    white-space: normal;
+}
+
+.two-factor-page .btn-resend-link .highlight-text {
+    color: var(--src-wine-dark) !important;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+.two-factor-page .btn-resend-link:hover,
+.two-factor-page .btn-resend-link:focus-visible {
+    color: #1f2937 !important;
+    background: #f8fafc !important;
+}
+
+.two-factor-page .alert {
+    color: #14532d;
+    background: #f0fdf4;
+    border-radius: 10px;
+}
+
+@media (max-width: 480px) {
+    .two-factor-page {
+        align-items: flex-start;
+        padding: 1rem;
+    }
+
+    .two-factor-page .login-logo {
+        padding: 1rem 1rem 0.85rem;
+    }
+
+    .two-factor-page .login-logo > a {
+        font-size: 1.75rem;
+    }
+
+    .two-factor-page .login-card-body {
+        padding: 1.15rem !important;
+    }
+}
+
 .src-module-hero {
     display: flex;
     align-items: center;
@@ -2883,6 +3070,17 @@ body.register-page {
     background: #8a96a3;
 }
 
+.src-delivery-badge-muted,
+.src-delivery-badge-returned {
+    color: #5f6b78;
+    background: #eef1f4;
+}
+
+.src-delivery-badge-muted > span,
+.src-delivery-badge-returned > span {
+    background: #8a96a3;
+}
+
 .src-delivery-action {
     display: inline-flex;
     align-items: center;
@@ -4886,6 +5084,194 @@ body.register-page {
 .src-catalog-status-pending {
     color: #8a6413;
     background: #fff1c2;
+}
+
+.src-catalog-status-in-use {
+    color: #285d91;
+    background: #e8f1fb;
+}
+
+.src-catalog-status-returned,
+.src-catalog-status-muted {
+    color: #5f6b78;
+    background: #eef1f4;
+}
+
+.src-catalog-status-cancelled {
+    color: #a12c34;
+    background: #fde9e9;
+}
+
+.src-impersonation-banner {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    width: 100%;
+    padding: 0.65rem 1.25rem;
+    color: #fff;
+    background: #7b1e24;
+    font-size: 0.9rem;
+}
+
+.src-impersonation-banner__message {
+    display: flex;
+    flex: 1 1 18rem;
+    align-items: flex-start;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
+.src-impersonation-banner__message i {
+    flex: 0 0 auto;
+    margin-top: 0.15rem;
+}
+
+.src-impersonation-banner__message span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.src-impersonation-banner form {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.src-impersonation-banner button {
+    min-height: 44px;
+    padding: 0.35rem 0.7rem;
+    color: #fff;
+    background: #a6262e;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 0.5rem;
+    font-weight: 650;
+}
+
+.src-impersonation-banner button:hover,
+.src-impersonation-banner button:focus-visible {
+    background: #8e2028;
+}
+
+.src-impersonation-banner button:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+.src-test-tools {
+    display: grid;
+    gap: 1rem;
+}
+
+.src-test-tools-card,
+.src-test-tools-result {
+    padding: 1.25rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.src-test-tools-card > header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.src-test-tools-card > header > span {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    color: #7b1e24;
+    background: #fbf0f1;
+    border-radius: 12px;
+}
+
+.src-test-tools-card h2 {
+    margin: 0;
+    color: #263445;
+    font-size: 1.1rem;
+}
+
+.src-test-tools-card header p {
+    margin: 0.2rem 0 0;
+    color: #728092;
+}
+
+.src-test-tools-actions,
+.src-test-tools-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.src-test-tools-actions form,
+.src-test-tools-row-actions form {
+    margin: 0;
+}
+
+.src-test-tools-primary,
+.src-test-tools-secondary,
+.src-test-tools-small-action {
+    padding: 0.55rem 0.85rem;
+    color: #fff;
+    background: #a6262e;
+    border: 1px solid #a6262e;
+    border-radius: 0.55rem;
+    font-weight: 650;
+}
+
+.src-test-tools-secondary,
+.src-test-tools-small-action.is-secondary {
+    color: #7b1e24;
+    background: #fff;
+    border-color: #d7aeb1;
+}
+
+.src-test-tools-small-action {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.8rem;
+}
+
+.src-test-tools-table td,
+.src-test-tools-table th {
+    vertical-align: middle;
+}
+
+.src-test-tools-table td:first-child small {
+    display: block;
+    color: #728092;
+}
+
+.src-test-tools-empty {
+    padding: 1.5rem !important;
+    color: #728092;
+    text-align: center;
+}
+
+.src-test-tools-result {
+    border-left: 4px solid #7b1e24;
+}
+
+.src-test-tools-result pre {
+    margin: 0.7rem 0 0;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 640px) {
+    .src-impersonation-banner {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 0.7rem 1rem;
+    }
+
+    .src-impersonation-banner form,
+    .src-impersonation-banner button {
+        width: 100%;
+    }
 }
 
 .src-catalog-badge {

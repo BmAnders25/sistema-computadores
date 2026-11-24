@@ -167,8 +167,8 @@
 
                     <div class="src-delivery-actions">
                         @if ($reserva->estado === 'confirmada')
-                            <span class="src-delivery-badge src-delivery-badge-confirmed">
-                                <span aria-hidden="true"></span>Confirmada
+                            <span class="src-delivery-badge src-delivery-badge-{{ $reserva->estado_color }}">
+                                <span aria-hidden="true"></span>{{ $reserva->estado_etiqueta }}
                             </span>
                             @can('registrar-entregas')
                                 <form method="POST" action="{{ route('entregas.entregar', $reserva) }}">
@@ -180,7 +180,7 @@
                             @endcan
                         @elseif ($reserva->estado === 'entregada')
                             <span class="src-delivery-badge src-delivery-badge-in-use">
-                                <span aria-hidden="true"></span>En uso / Entregado
+                                <span aria-hidden="true"></span>{{ $reserva->estado_etiqueta }}
                             </span>
                             @can('registrar-devoluciones')
                                 <form method="POST" action="{{ route('entregas.devolver', $reserva) }}">
@@ -191,8 +191,8 @@
                                 </form>
                             @endcan
                         @else
-                            <span class="src-delivery-badge src-delivery-badge-finished">
-                                <span aria-hidden="true"></span>Devuelta / Finalizada
+                            <span class="src-delivery-badge src-delivery-badge-{{ $reserva->estado_color }}">
+                                <span aria-hidden="true"></span>{{ $reserva->estado_etiqueta }}
                             </span>
                         @endif
                     </div>

@@ -17,6 +17,8 @@ use App\Http\Controllers\DisponibilidadController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\ReporteOcupacionController;
 use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\HerramientasPruebaController;
+use App\Http\Middleware\EnsureLocalEnvironment;
 Auth::routes(['register' => false]);
 
 // Segundo factor: requiere sesión, pero NO el middleware two-factor (evita bucle)
@@ -74,6 +76,9 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
     'bloques-horarios' => 'bloqueHorario'
 ]);
     Route::resource('reservas', ReservaController::class);
+    Route::post('/reservas/{reserva}/no-presentada', [ReservaController::class, 'marcarNoPresentada'])
+        ->middleware(['permission:registrar-entregas', 'role:Celador|Administracion'])
+        ->name('reservas.no-presentada');
     Route::patch('/reservas/{reserva}/confirmar', [ReservaController::class, 'confirmarIngreso'])
     ->name('reservas.confirmar')
     ->middleware(['auth', 'role:Celador|Administracion']); 
@@ -81,6 +86,22 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
     Route::resource('roles', RolController::class);
     Route::resource('permissions', PermissionController::class);
 
+    Route::middleware([EnsureLocalEnvironment::class, 'role:Administracion'])->group(function () {
+        Route::get('/herramientas-prueba', [HerramientasPruebaController::class, 'index'])
+            ->name('herramientas.prueba');
+        Route::post('/herramientas-prueba/recordatorios', [HerramientasPruebaController::class, 'recordatorios'])
+            ->name('herramientas.prueba.recordatorios');
+        Route::post('/herramientas-prueba/reiniciar', [HerramientasPruebaController::class, 'reiniciarEscenarios'])
+            ->name('herramientas.prueba.reiniciar');
+        Route::post('/herramientas-prueba/usuarios/{user}/impersonar', [HerramientasPruebaController::class, 'impersonar'])
+            ->name('herramientas.prueba.impersonar');
+        Route::post('/herramientas-prueba/usuarios/{user}/confirmacion', [HerramientasPruebaController::class, 'enviarConfirmacion'])
+            ->name('herramientas.prueba.confirmacion');
+    });
+
+    Route::post('/herramientas-prueba/volver', [HerramientasPruebaController::class, 'volver'])
+        ->middleware(EnsureLocalEnvironment::class)
+        ->name('herramientas.prueba.volver');
 
     
 });

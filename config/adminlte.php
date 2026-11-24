@@ -1,5 +1,16 @@
 <?php
 
+$herramientasPruebaMenu = env('APP_ENV', 'production') === 'local'
+    ? [[
+        'text' => 'Herramientas de prueba',
+        'route' => 'herramientas.prueba',
+        'can' => ['ver-estadistica'],
+        'icon' => 'fas fa-vial',
+        'icon_color' => 'white',
+        'classes' => 'text-sm',
+    ]]
+    : [];
+
 return [
 
     /*
@@ -331,7 +342,7 @@ return [
         'type' => 'navbar-notification',
         'id' => 'src-notificaciones',
         'icon' => 'fas fa-bell',
-        'icon_color' => 'white',
+        'aria_label' => 'Notificaciones',
         'label' => '',
         'label_color' => 'danger',
         'topnav_right' => true,
@@ -354,6 +365,7 @@ return [
         'icon_color' => 'white',
         'classes' => 'text-sm',
     ],
+    ...$herramientasPruebaMenu,
 
     // --- Reservas ---
     ['header' => 'RESERVAS', 'classes' => 'text-uppercase text-light small fw-semibold'],

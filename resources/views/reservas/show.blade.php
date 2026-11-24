@@ -23,14 +23,8 @@
         $fecha = \Illuminate\Support\Carbon::parse($reserva->fecha);
         $horaInicio = $reserva->bloque ? \Illuminate\Support\Carbon::parse($reserva->bloque->hora_inicio)->format('H:i') : null;
         $horaFin = $reserva->bloque ? \Illuminate\Support\Carbon::parse($reserva->bloque->hora_fin)->format('H:i') : null;
-        $estadoReserva = [
-            'pendiente' => ['Pendiente de aprobación', 'pending'],
-            'confirmada' => ['Confirmada · Pendiente de entrega', 'active'],
-            'entregada' => ['En uso', 'active'],
-            'devuelta' => ['Devuelta', 'inactive'],
-            'cancelada' => ['Cancelada', 'inactive'],
-            'no_show' => ['No se presentó', 'inactive'],
-        ][$reserva->estado] ?? [ucfirst($reserva->estado), 'inactive'];
+        $estadoEtiqueta = $reserva->estado_etiqueta;
+        $estadoColor = $reserva->estado_color;
         $recursoNombre = $reserva->computador_id
             ? trim((optional($reserva->computador)->marca ?? '') . ' ' . (optional($reserva->computador)->modelo ?? ''))
             : (optional($reserva->aula)->nombre ?? 'Aula completa');
@@ -45,7 +39,7 @@
             <span class="src-catalog-summary-icon"><i class="fas fa-receipt" aria-hidden="true"></i></span>
             <h2>Reserva #{{ $reserva->id }}</h2>
             <p>{{ $fecha->format('d/m/Y') }}</p>
-            <span class="src-catalog-status src-catalog-status-{{ $estadoReserva[1] }}"><span aria-hidden="true"></span>{{ $estadoReserva[0] }}</span>
+            <span class="src-catalog-status src-catalog-status-{{ $estadoColor }}"><span aria-hidden="true"></span>{{ $estadoEtiqueta }}</span>
             <div class="src-catalog-detail-rows">
                 <div class="src-catalog-detail-row"><span>Clave única</span><strong class="text-monospace">{{ $reserva->clave_unica }}</strong></div>
                 <div class="src-catalog-detail-row"><span>Solicitante</span><strong>{{ $reserva->user->name ?? 'N/A' }}</strong></div>
@@ -63,7 +57,7 @@
                     <div class="src-catalog-detail-row"><span>Fecha programada</span><strong>{{ $fecha->translatedFormat('d M Y') }}</strong></div>
                     <div class="src-catalog-detail-row"><span>Bloque horario</span><strong>{{ $reserva->bloque->nombre ?? 'N/A' }}</strong></div>
                     <div class="src-catalog-detail-row"><span>Horario</span><strong>{{ $horaInicio && $horaFin ? $horaInicio . ' - ' . $horaFin : 'No especificado' }}</strong></div>
-                    <div class="src-catalog-detail-row"><span>Estado</span><strong>{{ $estadoReserva[0] }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Estado</span><strong>{{ $estadoEtiqueta }}</strong></div>
                     <div class="src-catalog-detail-row"><span>Clave única de verificación</span><strong class="text-monospace">{{ $reserva->clave_unica }}</strong></div>
                 </div>
             </section>

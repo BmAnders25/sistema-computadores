@@ -90,7 +90,9 @@ class NotificacionesReservasTest extends TestCase
             ->assertOk()
             ->assertSee('Historial de notificaciones')
             ->assertSee('src-notificaciones')
-            ->assertSee('fa-bell');
+            ->assertSee('fas fa-bell')
+            ->assertSee('aria-label="Notificaciones"', false)
+            ->assertDontSee('class="fas fa-bell text-white"', false);
 
         $this->actingAs($propietario)
             ->withSession(['two_factor_passed' => true])
@@ -115,12 +117,14 @@ class NotificacionesReservasTest extends TestCase
             ->withSession(['two_factor_passed' => true])
             ->getJson(route('notificaciones.resumen'))
             ->assertOk()
-            ->assertJsonStructure(['label', 'label_color', 'icon_color', 'dropdown'])
+            ->assertJsonStructure(['label', 'label_color', 'dropdown'])
+            ->assertJsonMissingPath('icon_color')
             ->assertJsonPath('label', 0);
     }
 
     public function test_notification_test_seeder_is_repeatable_and_creates_expected_slots(): void
     {
+        $this->app['env'] = 'local';
         Notification::fake();
         $ahora = Carbon::parse('2026-11-22 16:00:00', config('app.timezone'));
         Carbon::setTestNow($ahora);

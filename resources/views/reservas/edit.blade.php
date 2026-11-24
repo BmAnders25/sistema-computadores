@@ -34,6 +34,7 @@
                 <div class="src-catalog-detail-rows">
                     <div class="src-catalog-detail-row"><span>Usuario solicitante</span><strong>{{ $reserva->user->name ?? 'N/A' }}</strong></div>
                     <div class="src-catalog-detail-row"><span>Fecha programada</span><strong>{{ \Illuminate\Support\Carbon::parse($reserva->fecha)->format('d/m/Y') }}</strong></div>
+                    <div class="src-catalog-detail-row"><span>Estado actual</span><strong>{{ $reserva->estado_etiqueta }}</strong></div>
                     <div class="src-catalog-detail-row src-catalog-field-full"><span>Recurso</span><strong>{{ $reserva->computador_id ? 'Computador ID: ' . $reserva->computador_id : 'Aula completa' }}</strong></div>
                 </div>
             </section>
@@ -47,12 +48,12 @@
                     <div class="src-form-field src-form-field-full">
                         <label for="estado">Estado de la reserva <span aria-hidden="true">*</span></label>
                         <select name="estado" id="estado" class="src-form-control" required>
-                            <option value="pendiente" {{ old('estado', $reserva->estado) == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                            <option value="confirmada" {{ old('estado', $reserva->estado) == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
-                            <option value="entregada" {{ old('estado', $reserva->estado) == 'entregada' ? 'selected' : '' }}>Entregada</option>
-                            <option value="devuelta" {{ old('estado', $reserva->estado) == 'devuelta' ? 'selected' : '' }}>Devuelta</option>
-                            <option value="cancelada" {{ old('estado', $reserva->estado) == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
-                            <option value="no_show" {{ old('estado', $reserva->estado) == 'no_show' ? 'selected' : '' }}>No se presentó</option>
+                            @foreach (['pendiente', 'confirmada', 'entregada', 'devuelta', 'cancelada', 'no_show'] as $estado)
+                                @php($estadoOpcion = \App\Models\Reserva::make(['estado' => $estado]))
+                                <option value="{{ $estado }}" {{ old('estado', $reserva->estado) == $estado ? 'selected' : '' }}>
+                                    {{ $estadoOpcion->estado_etiqueta }}
+                                </option>
+                            @endforeach
                         </select>
                         @error('estado')<span class="src-form-error">{{ $message }}</span>@enderror
                     </div>

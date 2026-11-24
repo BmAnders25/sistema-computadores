@@ -20,6 +20,31 @@ class Reserva extends Model
         'recordatorio_fin_enviado_at'    => 'datetime',
     ];
 
+    public function getEstadoEtiquetaAttribute(): string
+    {
+        return match ($this->estado) {
+            'pendiente' => 'Reservada',
+            'entregada' => 'En uso',
+            'devuelta' => 'Devuelta',
+            'cancelada' => 'Cancelada',
+            'no_show' => 'No se presentó',
+            'confirmada' => 'Confirmada (legado)',
+            default => ucfirst((string) $this->estado),
+        };
+    }
+
+    public function getEstadoColorAttribute(): string
+    {
+        return match ($this->estado) {
+            'pendiente' => 'pending',
+            'entregada' => 'in-use',
+            'devuelta' => 'returned',
+            'cancelada', 'no_show' => 'cancelled',
+            'confirmada' => 'muted',
+            default => 'muted',
+        };
+    }
+
     public function user()       { return $this->belongsTo(User::class); }
     public function computador() { return $this->belongsTo(Computador::class); }
     public function aula()       { return $this->belongsTo(Aula::class); }

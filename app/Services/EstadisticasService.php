@@ -27,7 +27,7 @@ class EstadisticasService
         return Cache::remember($cacheKey, 60, function () use ($desde, $hasta, $desdeKey, $hastaKey, $aulaId, $bloque, $estado) {
             $dias = (int) $desde->copy()->startOfDay()->diffInDays($hasta->copy()->startOfDay()) + 1;
 
-            $equiposDisponiblesQuery = Computador::query()->where('estado', '!=', 'inactivo');
+            $equiposDisponiblesQuery = Computador::query()->where('computadores.estado', '!=', 'inactivo');
             $this->aplicarFiltroEquipo($equiposDisponiblesQuery, $aulaId, $bloque);
             $equiposDisponibles = (clone $equiposDisponiblesQuery)->count();
 
@@ -49,14 +49,18 @@ class EstadisticasService
             $mesAnteriorInicio = now()->subMonth()->startOfMonth();
             $mesAnteriorFin = $mesAnteriorInicio->copy()->endOfMonth();
 
-            $reservasMesActualQuery = Reserva::query()->whereBetween('fecha', [$mesActualInicio->toDateString(), $mesActualFin->toDateString()]);
+            $reservasMesActualQuery = Reserva::query()
+                ->whereDate('fecha', '>=', $mesActualInicio->toDateString())
+                ->whereDate('fecha', '<=', $mesActualFin->toDateString());
             $this->aplicarFiltroReserva($reservasMesActualQuery, $aulaId, $bloque);
             if ($estado !== null) {
                 $reservasMesActualQuery->where('estado', $estado);
             }
             $reservasMes = (clone $reservasMesActualQuery)->count();
 
-            $reservasMesAnteriorQuery = Reserva::query()->whereBetween('fecha', [$mesAnteriorInicio->toDateString(), $mesAnteriorFin->toDateString()]);
+            $reservasMesAnteriorQuery = Reserva::query()
+                ->whereDate('fecha', '>=', $mesAnteriorInicio->toDateString())
+                ->whereDate('fecha', '<=', $mesAnteriorFin->toDateString());
             $this->aplicarFiltroReserva($reservasMesAnteriorQuery, $aulaId, $bloque);
             if ($estado !== null) {
                 $reservasMesAnteriorQuery->where('estado', $estado);
@@ -70,13 +74,15 @@ class EstadisticasService
             $equiposHoyQuery = Computador::query();
             $this->aplicarFiltroEquipo($equiposHoyQuery, $aulaId, $bloque);
             $equiposHoy = [
-                'disponibles' => (clone $equiposHoyQuery)->where('estado', 'disponible')->count(),
-                'en_uso' => (clone $equiposHoyQuery)->where('estado', 'prestado')->count(),
-                'mantenimiento' => (clone $equiposHoyQuery)->where('estado', 'mantenimiento')->count(),
-                'inactivos' => (clone $equiposHoyQuery)->where('estado', 'inactivo')->count(),
+                'disponibles' => (clone $equiposHoyQuery)->where('computadores.estado', 'disponible')->count(),
+                'en_uso' => (clone $equiposHoyQuery)->where('computadores.estado', 'prestado')->count(),
+                'mantenimiento' => (clone $equiposHoyQuery)->where('computadores.estado', 'mantenimiento')->count(),
+                'inactivos' => (clone $equiposHoyQuery)->where('computadores.estado', 'inactivo')->count(),
             ];
 
-            $reservasRangoQuery = Reserva::query()->whereBetween('fecha', [$desdeKey, $hastaKey]);
+            $reservasRangoQuery = Reserva::query()
+                ->whereDate('fecha', '>=', $desdeKey)
+                ->whereDate('fecha', '<=', $hastaKey);
             $this->aplicarFiltroReserva($reservasRangoQuery, $aulaId, $bloque);
             if ($estado !== null) {
                 $reservasRangoQuery->where('estado', $estado);
@@ -123,12 +129,15 @@ class EstadisticasService
 
         $query = Reserva::query()
             ->selectRaw('fecha, COUNT(*) as total')
-            ->whereBetween('fecha', [$desde->toDateString(), $hasta->toDateString()])
+            ->whereDate('fecha', '>=', $desde->toDateString())
+            ->whereDate('fecha', '<=', $hasta->toDateString())
             ->groupBy('fecha')
             ->orderBy('fecha');
         $this->aplicarFiltroReserva($query, $aulaId, $bloque);
 
-        $totales = $query->pluck('total', 'fecha')->map(fn ($value) => (int) $value)->all();
+        $totales = $query->get()->mapWithKeys(fn ($fila) => [
+            Carbon::parse($fila->fecha)->toDateString() => (int) $fila->total,
+        ])->all();
         $dias = (int) $desde->diffInDays($hasta) + 1;
 
         if ($dias <= 31) {
@@ -178,7 +187,8 @@ class EstadisticasService
             ->join('aulas', 'aulas.id', '=', 'reservas.aula_id')
             ->selectRaw('aulas.id as aula_id, aulas.nombre, COUNT(*) as total')
             ->whereNotNull('reservas.aula_id')
-            ->whereBetween('reservas.fecha', [$desdeFecha, $hastaFecha])
+            ->whereDate('reservas.fecha', '>=', $desdeFecha)
+            ->whereDate('reservas.fecha', '<=', $hastaFecha)
             ->groupBy('aulas.id', 'aulas.nombre');
 
         $reservasComputador = Reserva::query()
@@ -187,7 +197,8 @@ class EstadisticasService
             ->selectRaw('aulas.id as aula_id, aulas.nombre, COUNT(*) as total')
             ->whereNull('reservas.aula_id')
             ->whereNotNull('reservas.computador_id')
-            ->whereBetween('reservas.fecha', [$desdeFecha, $hastaFecha])
+            ->whereDate('reservas.fecha', '>=', $desdeFecha)
+            ->whereDate('reservas.fecha', '<=', $hastaFecha)
             ->groupBy('aulas.id', 'aulas.nombre');
 
         $this->aplicarFiltroReservaJoin($reservasAula, $aulaId, $bloque, 'aulas', 'aulas');
@@ -196,7 +207,7 @@ class EstadisticasService
         $uso = [];
         foreach (array_merge($reservasAula->get()->all(), $reservasComputador->get()->all()) as $fila) {
             $id = (int) $fila->aula_id;
-            if (!isset($uso[$id])) {
+            if (! isset($uso[$id])) {
                 $uso[$id] = ['aula_id' => $id, 'aula' => $fila->nombre, 'total' => 0];
             }
             $uso[$id]['total'] += (int) $fila->total;
@@ -221,7 +232,8 @@ class EstadisticasService
             ->whereNull('reservas.aula_id')
             ->where('computadores.estado', '!=', 'inactivo')
             ->whereIn('reservas.estado', self::ESTADOS_OCUPADOS)
-            ->whereBetween('reservas.fecha', [$desdeFecha, $hastaFecha])
+            ->whereDate('reservas.fecha', '>=', $desdeFecha)
+            ->whereDate('reservas.fecha', '<=', $hastaFecha)
             ->where('bloques_horarios.activo', true)
             ->groupBy('bloques_horarios.id', 'bloques_horarios.nombre');
 
@@ -233,7 +245,8 @@ class EstadisticasService
             ->whereNotNull('reservas.aula_id')
             ->where('computadores.estado', '!=', 'inactivo')
             ->whereIn('reservas.estado', self::ESTADOS_OCUPADOS)
-            ->whereBetween('reservas.fecha', [$desdeFecha, $hastaFecha])
+            ->whereDate('reservas.fecha', '>=', $desdeFecha)
+            ->whereDate('reservas.fecha', '<=', $hastaFecha)
             ->where('bloques_horarios.activo', true)
             ->groupBy('bloques_horarios.id', 'bloques_horarios.nombre');
 
@@ -252,7 +265,7 @@ class EstadisticasService
         $ocupacion = [];
         foreach (array_merge($computadorQuery->get()->all(), $aulaQuery->get()->all()) as $fila) {
             $id = (int) $fila->bloque_horario_id;
-            if (!isset($ocupacion[$id])) {
+            if (! isset($ocupacion[$id])) {
                 $ocupacion[$id] = [
                     'bloque_horario_id' => $id,
                     'bloque' => $fila->nombre,
@@ -273,7 +286,8 @@ class EstadisticasService
         $query = Reserva::query()
             ->join('users', 'users.id', '=', 'reservas.user_id')
             ->selectRaw('users.id as user_id, users.name, COUNT(*) as total')
-            ->whereBetween('reservas.fecha', [$desde->toDateString(), $hasta->toDateString()])
+            ->whereDate('reservas.fecha', '>=', $desde->toDateString())
+            ->whereDate('reservas.fecha', '<=', $hasta->toDateString())
             ->groupBy('users.id', 'users.name')
             ->orderByDesc('total')
             ->limit(10);
@@ -302,7 +316,8 @@ class EstadisticasService
             ->whereNull('reservas.aula_id')
             ->where('computadores.estado', '!=', 'inactivo')
             ->whereIn('reservas.estado', $this->estadosOcupacionFiltrados($estado))
-            ->whereBetween('reservas.fecha', [$desdeFecha, $hastaFecha])
+            ->whereDate('reservas.fecha', '>=', $desdeFecha)
+            ->whereDate('reservas.fecha', '<=', $hastaFecha)
             ->where('bloques_horarios.activo', true)
             ->groupBy('reservas.fecha', 'bloques_horarios.id', 'bloques_horarios.nombre', 'aulas.id', 'aulas.nombre');
 
@@ -314,7 +329,8 @@ class EstadisticasService
             ->whereNotNull('reservas.aula_id')
             ->where('computadores.estado', '!=', 'inactivo')
             ->whereIn('reservas.estado', $this->estadosOcupacionFiltrados($estado))
-            ->whereBetween('reservas.fecha', [$desdeFecha, $hastaFecha])
+            ->whereDate('reservas.fecha', '>=', $desdeFecha)
+            ->whereDate('reservas.fecha', '<=', $hastaFecha)
             ->where('bloques_horarios.activo', true)
             ->groupBy('reservas.fecha', 'bloques_horarios.id', 'bloques_horarios.nombre', 'aulas.id', 'aulas.nombre');
 
@@ -331,10 +347,10 @@ class EstadisticasService
         }
 
         $equiposQuery = Computador::query()
-            ->selectRaw('aula_id, COUNT(*) as total')
-            ->where('estado', '!=', 'inactivo')
-            ->whereNotNull('aula_id')
-            ->groupBy('aula_id');
+            ->selectRaw('computadores.aula_id, COUNT(*) as total')
+            ->where('computadores.estado', '!=', 'inactivo')
+            ->whereNotNull('computadores.aula_id')
+            ->groupBy('computadores.aula_id');
         $this->aplicarFiltroEquipo($equiposQuery, $aulaId, $bloque);
         $equiposPorAula = $equiposQuery->pluck('total', 'aula_id')
             ->map(fn ($value) => (int) $value)
@@ -342,10 +358,11 @@ class EstadisticasService
 
         $detalle = [];
         foreach (array_merge($directas->get()->all(), $porAula->get()->all()) as $fila) {
-            $key = implode('|', [$fila->fecha, $fila->bloque_horario_id, $fila->aula_id]);
-            if (!isset($detalle[$key])) {
+            $fecha = Carbon::parse($fila->fecha)->toDateString();
+            $key = implode('|', [$fecha, $fila->bloque_horario_id, $fila->aula_id]);
+            if (! isset($detalle[$key])) {
                 $detalle[$key] = [
-                    'fecha' => $fila->fecha,
+                    'fecha' => $fecha,
                     'bloque_horario_id' => (int) $fila->bloque_horario_id,
                     'bloque' => $fila->bloque,
                     'aula_id' => (int) $fila->aula_id,
@@ -376,7 +393,8 @@ class EstadisticasService
             ->whereNull('reservas.aula_id')
             ->where('computadores.estado', '!=', 'inactivo')
             ->whereIn('reservas.estado', $this->estadosOcupacionFiltrados($estado))
-            ->whereBetween('reservas.fecha', [$desdeFecha, $hastaFecha])
+            ->whereDate('reservas.fecha', '>=', $desdeFecha)
+            ->whereDate('reservas.fecha', '<=', $hastaFecha)
             ->where('bloques_horarios.activo', true);
 
         $porAula = Reserva::query()
@@ -386,7 +404,8 @@ class EstadisticasService
             ->whereNotNull('reservas.aula_id')
             ->where('computadores.estado', '!=', 'inactivo')
             ->whereIn('reservas.estado', $this->estadosOcupacionFiltrados($estado))
-            ->whereBetween('reservas.fecha', [$desdeFecha, $hastaFecha])
+            ->whereDate('reservas.fecha', '>=', $desdeFecha)
+            ->whereDate('reservas.fecha', '<=', $hastaFecha)
             ->where('bloques_horarios.activo', true);
 
         if ($aulaId) {
@@ -417,7 +436,7 @@ class EstadisticasService
     private function aplicarFiltroEquipo(Builder $query, ?int $aulaId, ?string $bloque): void
     {
         if ($aulaId) {
-            $query->where('aula_id', $aulaId);
+            $query->where('computadores.aula_id', $aulaId);
         }
 
         if ($bloque !== null && $bloque !== '') {
@@ -468,7 +487,7 @@ class EstadisticasService
         }
 
         if ($bloque !== null && $bloque !== '') {
-            $query->where($aulaAlias . '.bloque', $bloque);
+            $query->where($aulaAlias.'.bloque', $bloque);
         }
     }
 }

@@ -7,7 +7,7 @@
         <div>
             <span class="src-availability-eyebrow">AVISOS Y RECORDATORIOS</span>
             <h1>Notificaciones</h1>
-            <p>Consulta los avisos sobre el inicio y cierre de tus reservas.</p>
+            <p>Consulta confirmaciones, recordatorios y novedades de tus reservas.</p>
         </div>
         <i class="fas fa-bell src-page-hero-icon" aria-hidden="true"></i>
     </section>
@@ -40,7 +40,13 @@
                 @php($datos = $notificacion->data)
                 <article class="src-notification-row {{ $notificacion->read_at ? '' : 'is-unread' }}">
                     <span class="src-notification-icon">
-                        <i class="fas {{ ($datos['tipo'] ?? '') === 'fin' ? 'fa-hourglass-end' : 'fa-bell' }}" aria-hidden="true"></i>
+                        <i class="fas {{ match ($datos['tipo'] ?? '') {
+                            'fin' => 'fa-hourglass-end',
+                            'inicio' => 'fa-clock',
+                            'confirmacion' => 'fa-calendar-check',
+                            'no_show' => 'fa-user-clock',
+                            default => 'fa-bell',
+                        } }}" aria-hidden="true"></i>
                     </span>
                     <div class="src-notification-content">
                         <div class="src-notification-title-row">

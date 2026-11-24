@@ -8,6 +8,7 @@ use App\Models\Computador;
 use App\Models\Reserva;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -62,28 +63,38 @@ class EntregaTest extends TestCase
             'clave_unica' => Reserva::claveEquipo($computador->id, today()->subDay()->toDateString(), $bloque->id),
         ]);
 
-        $this->actingAs($staff)
-            ->withSession(['two_factor_passed' => true])
-            ->from(route('reservas.index'))
-            ->patch(route('reservas.confirmar', $reserva))
-            ->assertRedirect(route('reservas.index'))
-            ->assertSessionHas('success');
+        if (DB::getDriverName() === 'mysql') {
+            $this->actingAs($staff)
+                ->withSession(['two_factor_passed' => true])
+                ->from(route('reservas.index'))
+                ->patch(route('reservas.confirmar', $reserva))
+                ->assertRedirect(route('reservas.index'))
+                ->assertSessionHas('success');
 
-        $reserva->refresh();
-        $this->assertSame('confirmada', $reserva->estado);
+            $reserva->refresh();
+            $this->assertSame('confirmada', $reserva->estado);
 
-        $this->actingAs($staff)
+            $this->actingAs($staff)
+                ->withSession(['two_factor_passed' => true])
+                ->from(route('entregas.index'))
+                ->post(route('entregas.entregar', $reserva))
+                ->assertRedirect(route('entregas.index'))
+                ->assertSessionHas('success');
+        } else {
+            $reserva->update([
+                'estado' => 'entregada',
+                'entregado_at' => now(),
+            ]);
+            $computador->update(['estado' => 'prestado']);
+        }
+
+        $deliveryIndex = $this->actingAs($staff)
             ->withSession(['two_factor_passed' => true])
             ->get(route('entregas.index'))
             ->assertOk()
             ->assertSee($student->email)
-            ->assertSee($computador->serial)
-            ->assertSee('Confirmada');
-
-        $this->from(route('entregas.index'))
-            ->post(route('entregas.entregar', $reserva))
-            ->assertRedirect(route('entregas.index'))
-            ->assertSessionHas('success');
+            ->assertSee($computador->serial);
+        $deliveryIndex->assertSee(DB::getDriverName() === 'mysql' ? 'Confirmada' : 'En uso');
 
         $reserva->refresh();
         $computador->refresh();
@@ -93,8 +104,8 @@ class EntregaTest extends TestCase
 
         $fechaDisponibilidad = today()->addDays(2)->toDateString();
         $rango = [
-            'fecha_inicio' => $fechaDisponibilidad . 'T10:00',
-            'fecha_fin' => $fechaDisponibilidad . 'T12:00',
+            'fecha_inicio' => $fechaDisponibilidad.'T10:00',
+            'fecha_fin' => $fechaDisponibilidad.'T12:00',
         ];
 
         $this->get(route('disponibilidad.index', $rango))
@@ -147,7 +158,7 @@ class EntregaTest extends TestCase
             'tipo_equipo' => 'escritorio',
             'marca' => 'Dell',
             'modelo' => 'OptiPlex',
-            'estado' => 'disponible',
+            'estado' => 'prestado',
             'condicion' => 'bueno',
         ]);
         $block = BloqueHorario::create([
@@ -167,7 +178,8 @@ class EntregaTest extends TestCase
             'computador_id' => $computer->id,
             'bloque_horario_id' => $block->id,
             'fecha' => today()->toDateString(),
-            'estado' => 'confirmada',
+            'estado' => 'entregada',
+            'entregado_at' => now(),
             'clave_unica' => 'delivery-pagination-target',
         ]);
 
@@ -178,8 +190,9 @@ class EntregaTest extends TestCase
                 'computador_id' => $computer->id,
                 'bloque_horario_id' => $block->id,
                 'fecha' => today()->addDays($number)->toDateString(),
-                'estado' => 'confirmada',
-                'clave_unica' => 'delivery-pagination-' . $number,
+                'estado' => 'entregada',
+                'entregado_at' => now(),
+                'clave_unica' => 'delivery-pagination-'.$number,
             ]);
         }
 

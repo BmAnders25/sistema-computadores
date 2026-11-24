@@ -54,4 +54,24 @@ class AuthenticationTest extends TestCase
 
         $this->get(route('login'))->assertSee('is-invalid', false);
     }
+
+    public function test_two_factor_page_renders_accessible_code_and_resend_controls(): void
+    {
+        $user = User::factory()->create([
+            'two_factor_enabled' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->withSession(['two_factor_passed' => false])
+            ->get(route('two-factor.show'))
+            ->assertOk()
+            ->assertSee('two-factor-page', false)
+            ->assertSee('Verificación en dos pasos')
+            ->assertSee('inputmode="numeric"', false)
+            ->assertSee('autocomplete="one-time-code"', false)
+            ->assertSee('aria-describedby="two-factor-instruction"', false)
+            ->assertSee('¿No recibiste el código?')
+            ->assertSee('action="' . route('two-factor.verify') . '"', false)
+            ->assertSee('action="' . route('two-factor.resend') . '"', false);
+    }
 }

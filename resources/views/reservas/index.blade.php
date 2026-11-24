@@ -59,10 +59,10 @@
                     Todas <span>{{ $totalReservas }}</span>
                 </button>
                 <button type="button" class="src-reservation-tab {{ $selectedEstado === 'pendiente' ? 'is-active' : '' }}" data-reservation-filter="pending" data-reservation-query-value="pendiente" aria-pressed="{{ $selectedEstado === 'pendiente' ? 'true' : 'false' }}">
-                    Pendientes <span class="src-reservation-tab-count-pending">{{ $pendientesCount }}</span>
+                    Reservadas <span class="src-reservation-tab-count-pending">{{ $pendientesCount }}</span>
                 </button>
                 <button type="button" class="src-reservation-tab {{ $selectedEstado === 'confirmada' ? 'is-active' : '' }}" data-reservation-filter="confirmed" data-reservation-query-value="confirmada" aria-pressed="{{ $selectedEstado === 'confirmada' ? 'true' : 'false' }}">
-                    Confirmadas <span>{{ $confirmadasCount }}</span>
+                    Confirmadas (legado) <span>{{ $confirmadasCount }}</span>
                 </button>
                 <button type="button" class="src-reservation-tab {{ $selectedEstado === 'entregada' ? 'is-active' : '' }}" data-reservation-filter="in-use" data-reservation-query-value="entregada" aria-pressed="{{ $selectedEstado === 'entregada' ? 'true' : 'false' }}">
                     En uso <span>{{ $enUsoCount }}</span>
@@ -140,23 +140,8 @@
                         'entregada' => 'in-use',
                         default => 'history',
                     };
-                    $estadoLabel = match ($reserva->estado) {
-                        'pendiente' => 'Pendiente',
-                        'confirmada' => 'Confirmada',
-                        'entregada' => 'En uso',
-                        'devuelta' => 'Devuelta',
-                        'cancelada' => 'Rechazada / Cancelada',
-                        'no_show' => 'No se presentó',
-                        default => ucfirst($reserva->estado),
-                    };
-                    $estadoClass = match ($reserva->estado) {
-                        'pendiente' => 'pending',
-                        'confirmada' => 'confirmed',
-                        'entregada' => 'in-use',
-                        'devuelta' => 'returned',
-                        'cancelada', 'no_show' => 'cancelled',
-                        default => 'muted',
-                    };
+                    $estadoLabel = $reserva->estado_etiqueta;
+                    $estadoClass = $reserva->estado_color;
                     $textoBusqueda = \Illuminate\Support\Str::lower(implode(' ', [
                         $nombreSolicitante,
                         $correoSolicitante,
@@ -218,6 +203,15 @@
                                 Ver detalle
                             </a>
 
+                            @if ($reserva->aula_id)
+                                @can('editar-reservas')
+                                    <a class="src-reservation-detail-button" href="{{ route('reservas.edit', $reserva->id) }}">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
+                                        Cambiar estado
+                                    </a>
+                                @endcan
+                            @endif
+
                             @if ($reserva->estado === 'pendiente')
                                 @can('aprobar-reservas')
                                     <form action="{{ route('reservas.confirmar', $reserva->id) }}" method="POST" class="js-reservation-confirmation" data-confirm-kind="confirm">
@@ -235,7 +229,27 @@
                                             <i class="fas fa-times" aria-hidden="true"></i> Rechazar
                                         </button>
                                     </form>
-                                @else
+                                @endcan
+
+                                @can('registrar-entregas')
+                                    @php
+                                        $esAdministracion = auth()->user()->hasRole('Administracion');
+                                        $bloqueIniciado = $reserva->bloque
+                                            && now(config('app.timezone'))->greaterThan(
+                                                $reserva->bloque->inicioEn($reserva->fecha->toDateString())
+                                            );
+                                    @endphp
+                                    @if ($esAdministracion || (auth()->user()->hasRole('Celador') && $bloqueIniciado))
+                                        <form action="{{ route('reservas.no-presentada', $reserva->id) }}" method="POST" class="js-reservation-confirmation" data-confirm-kind="no-show">
+                                            @csrf
+                                            <button type="submit" class="src-reservation-reject-button">
+                                                <i class="fas fa-user-times" aria-hidden="true"></i> No se presentó
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endcan
+
+                                @if (! auth()->user()->can('aprobar-reservas'))
                                     @can('cancelar-reservas')
                                         @if ($reserva->user_id === auth()->id())
                                             <form action="{{ route('reservas.destroy', $reserva->id) }}" method="POST" class="js-reservation-confirmation" data-confirm-kind="cancel">
@@ -247,7 +261,7 @@
                                             </form>
                                         @endif
                                     @endcan
-                                @endcan
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -351,6 +365,11 @@
                             title: '¿Rechazar esta reserva?',
                             text: 'La solicitud será cancelada y el horario quedará liberado.',
                             confirmButtonText: 'Sí, rechazar'
+                        },
+                        'no-show': {
+                            title: '¿Marcar como No se presentó?',
+                            text: 'El cupo quedará liberado y se notificará a los celadores.',
+                            confirmButtonText: 'Sí, marcar'
                         },
                         cancel: {
                             title: '¿Cancelar tu reserva?',

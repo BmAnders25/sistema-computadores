@@ -5,7 +5,13 @@
             @csrf
             <button type="submit" class="src-notification-dropdown-item {{ $notificacion->read_at ? '' : 'is-unread' }}">
                 <span class="src-notification-icon">
-                    <i class="fas {{ ($datos['tipo'] ?? '') === 'fin' ? 'fa-hourglass-end' : 'fa-bell' }}" aria-hidden="true"></i>
+                    <i class="fas {{ match ($datos['tipo'] ?? '') {
+                        'fin' => 'fa-hourglass-end',
+                        'inicio' => 'fa-clock',
+                        'confirmacion' => 'fa-calendar-check',
+                        'no_show' => 'fa-user-clock',
+                        default => 'fa-bell',
+                    } }}" aria-hidden="true"></i>
                 </span>
                 <span class="src-notification-dropdown-copy">
                     <strong>{{ $datos['titulo'] ?? 'Notificación' }}</strong>

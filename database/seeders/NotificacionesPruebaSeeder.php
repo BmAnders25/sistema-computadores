@@ -16,6 +16,8 @@ class NotificacionesPruebaSeeder extends Seeder
 {
     public function run(): void
     {
+        abort_unless(app()->environment('local'), 403);
+
         $ahora = Carbon::now(config('app.timezone'));
         $hoy = $ahora->toDateString();
         $escenarios = [

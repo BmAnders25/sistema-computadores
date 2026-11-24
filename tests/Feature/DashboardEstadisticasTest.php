@@ -96,6 +96,132 @@ class DashboardEstadisticasTest extends TestCase
         $this->assertSame(100.0, $kpis['ocupacion']);
     }
 
+    public function test_dashboard_data_matches_reservation_states_filters_and_chart_totals(): void
+    {
+        Cache::flush();
+        Carbon::setTestNow(Carbon::parse('2026-11-23 09:00:00', config('app.timezone')));
+
+        try {
+            $permission = Permission::firstOrCreate([
+                'name' => 'ver-estadistica',
+                'guard_name' => 'web',
+            ]);
+            $adminRole = Role::firstOrCreate([
+                'name' => 'Administracion',
+                'guard_name' => 'web',
+            ]);
+            $adminRole->givePermissionTo($permission);
+            $admin = User::factory()->create(['estado' => 'activo']);
+            $admin->assignRole($adminRole);
+            $usuario = User::factory()->create(['estado' => 'activo']);
+
+            $aulaA = $this->createAula('LAB-DASHBOARD-A');
+            $aulaB = $this->createAula('LAB-DASHBOARD-B');
+            $aulaB->update(['bloque' => 'Bloque B']);
+            $equipoDisponible = $this->createComputador($aulaA, 'DASH-01');
+            $equipoEnUso = $this->createComputador($aulaA, 'DASH-02');
+            $equipoEnUso->update(['estado' => 'prestado']);
+            $equipoInactivo = $this->createComputador($aulaA, 'DASH-03');
+            $equipoInactivo->update(['estado' => 'inactivo']);
+            $equipoOtroBloque = $this->createComputador($aulaB, 'DASH-04');
+            $primerBloque = $this->createBloque('07:00', '09:00');
+            $segundoBloque = $this->createBloque('09:00', '11:00');
+            $this->createBloque('11:00', '13:00')->update(['activo' => false]);
+
+            $crearReserva = function (
+                ?Computador $equipo,
+                ?Aula $aula,
+                BloqueHorario $bloque,
+                string $fecha,
+                string $estado
+            ) use ($usuario): Reserva {
+                $clave = null;
+                if (in_array($estado, ['pendiente', 'entregada'], true)) {
+                    $clave = $equipo
+                        ? Reserva::claveEquipo($equipo->id, $fecha, $bloque->id)
+                        : Reserva::claveAula($aula->id, $fecha, $bloque->id);
+                }
+
+                return Reserva::create([
+                    'user_id' => $usuario->id,
+                    'computador_id' => $equipo?->id,
+                    'aula_id' => $aula?->id,
+                    'bloque_horario_id' => $bloque->id,
+                    'fecha' => $fecha,
+                    'estado' => $estado,
+                    'entregado_at' => in_array($estado, ['entregada', 'devuelta'], true) ? now()->subHour() : null,
+                    'devuelto_at' => $estado === 'devuelta' ? now() : null,
+                    'clave_unica' => $clave,
+                ]);
+            };
+
+            $ayer = '2026-11-22';
+            $hoy = '2026-11-23';
+            $mesAnterior = '2026-10-30';
+            $crearReserva($equipoDisponible, null, $primerBloque, $ayer, 'pendiente');
+            $crearReserva($equipoEnUso, null, $segundoBloque, $ayer, 'entregada');
+            $crearReserva($equipoDisponible, null, $primerBloque, $hoy, 'devuelta');
+            $crearReserva($equipoEnUso, null, $segundoBloque, $hoy, 'cancelada');
+            $crearReserva($equipoEnUso, null, $primerBloque, $ayer, 'no_show');
+            $crearReserva(null, $aulaA, $segundoBloque, $hoy, 'pendiente');
+            $crearReserva($equipoOtroBloque, null, $primerBloque, $ayer, 'pendiente');
+            $crearReserva($equipoDisponible, null, $primerBloque, $mesAnterior, 'no_show');
+
+            $response = $this->actingAs($admin)
+                ->withSession(['two_factor_passed' => true])
+                ->getJson(route('dashboard.datos', [
+                    'desde' => $ayer,
+                    'hasta' => $hoy,
+                ]))
+                ->assertOk()
+                ->assertJsonPath('kpis.slots_disponibles', 12)
+                ->assertJsonPath('kpis.slots_reservados', 6)
+                ->assertJsonPath('kpis.ocupacion', 50)
+                ->assertJsonPath('kpis.equipos_disponibles_para_slots', 3)
+                ->assertJsonPath('kpis.equipos_hoy.disponibles', 2)
+                ->assertJsonPath('kpis.equipos_hoy.en_uso', 1)
+                ->assertJsonPath('kpis.equipos_hoy.inactivos', 1)
+                ->assertJsonPath('kpis.reservas_mes.total', 7)
+                ->assertJsonPath('kpis.reservas_mes.mes_anterior', 1)
+                ->assertJsonPath('kpis.reservas_mes.variacion_porcentaje', 600)
+                ->assertJsonPath('kpis.cancelaciones.reservas_rango', 7)
+                ->assertJsonPath('kpis.cancelaciones.total_canceladas', 1)
+                ->assertJsonPath('kpis.cancelaciones.total_no_show', 1)
+                ->assertJsonPath('kpis.cancelaciones.tasa_cancelacion', 14.29)
+                ->assertJsonPath('kpis.cancelaciones.tasa_no_show', 14.29)
+                ->assertJsonPath('tendencia.0.total', 4)
+                ->assertJsonPath('tendencia.1.total', 3)
+                ->assertJsonPath('uso_por_aula.0.total', 6)
+                ->assertJsonPath('uso_por_aula.1.total', 1)
+                ->assertJsonPath('top_usuarios.0.total', 7)
+                ->assertJsonCount(5, 'detalle_ocupacion');
+
+            $ocupacionPorBloque = collect($response->json('ocupacion_por_bloque'))->keyBy('bloque');
+            $this->assertSame(3, $ocupacionPorBloque[$segundoBloque->nombre]['total']);
+            $this->assertSame(3, $ocupacionPorBloque[$primerBloque->nombre]['total']);
+
+            $detalleAulaCompleta = collect($response->json('detalle_ocupacion'))
+                ->first(fn (array $fila) => $fila['fecha'] === $hoy && $fila['bloque'] === $segundoBloque->nombre);
+            $this->assertSame(2, $detalleAulaCompleta['slots_reservados']);
+            $this->assertSame(2, $detalleAulaCompleta['slots_disponibles']);
+
+            $this->actingAs($admin)
+                ->withSession(['two_factor_passed' => true])
+                ->getJson(route('dashboard.datos', [
+                    'desde' => $ayer,
+                    'hasta' => $hoy,
+                    'aula_id' => $aulaA->id,
+                    'bloque' => 'Bloque A',
+                ]))
+                ->assertOk()
+                ->assertJsonPath('kpis.slots_disponibles', 8)
+                ->assertJsonPath('kpis.slots_reservados', 5)
+                ->assertJsonCount(4, 'detalle_ocupacion');
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     public function test_dashboard_data_access_is_restricted_by_role_and_validates_dates(): void
     {
         $permission = Permission::firstOrCreate([
@@ -171,8 +297,34 @@ class DashboardEstadisticasTest extends TestCase
         $this->actingAs($admin)
             ->withSession(['two_factor_passed' => true])
             ->getJson(route('dashboard.datos', [
-                'desde' => today()->subDays(367)->toDateString(),
+                'desde' => today()->subDays(366)->toDateString(),
                 'hasta' => today()->toDateString(),
+            ]))
+            ->assertStatus(422);
+
+        $this->actingAs($admin)
+            ->withSession(['two_factor_passed' => true])
+            ->getJson(route('dashboard.datos', [
+                'desde' => today()->subDays(365)->toDateString(),
+                'hasta' => today()->toDateString(),
+            ]))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->withSession(['two_factor_passed' => true])
+            ->getJson(route('dashboard.datos', [
+                'desde' => today()->toDateString(),
+                'hasta' => today()->toDateString(),
+                'aula_id' => 999999,
+            ]))
+            ->assertStatus(422);
+
+        $this->actingAs($admin)
+            ->withSession(['two_factor_passed' => true])
+            ->getJson(route('dashboard.datos', [
+                'desde' => today()->toDateString(),
+                'hasta' => today()->toDateString(),
+                'bloque' => str_repeat('B', 51),
             ]))
             ->assertStatus(422);
     }
@@ -203,7 +355,7 @@ class DashboardEstadisticasTest extends TestCase
     private function createBloque(string $inicio, string $fin): BloqueHorario
     {
         return BloqueHorario::create([
-            'nombre' => $inicio . ' - ' . $fin,
+            'nombre' => $inicio.' - '.$fin,
             'hora_inicio' => $inicio,
             'hora_fin' => $fin,
             'activo' => true,

@@ -18,12 +18,12 @@ class ReservaNoPresentada extends Notification
     {
         $this->reserva->loadMissing(['user', 'aula', 'computador']);
         $recurso = $this->reserva->aula_id
-            ? 'aula completa ' . ($this->reserva->aula?->nombre ?? '')
-            : trim(($this->reserva->computador?->marca ?? 'computador') . ' ' . ($this->reserva->computador?->modelo ?? ''));
+            ? 'aula completa '.($this->reserva->aula?->nombre ?? '')
+            : trim(($this->reserva->computador?->marca ?? 'computador').' '.($this->reserva->computador?->modelo ?? ''));
 
         return [
             'titulo' => 'Reserva marcada como no presentada',
-            'mensaje' => ($this->reserva->user?->name ?? 'Un usuario') . ' no se presentó a la reserva de ' . $recurso . '.',
+            'mensaje' => ($this->reserva->user?->name ?? 'Un usuario').' no se presentó a la reserva de '.$recurso.'.',
             'url' => route('reservas.show', $this->reserva),
             'tipo' => 'no_show',
             'reserva_id' => $this->reserva->getKey(),

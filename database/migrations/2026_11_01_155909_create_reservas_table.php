@@ -19,15 +19,15 @@ return new class extends Migration
             $table->foreignId('bloque_horario_id')->constrained('bloques_horarios');
             $table->date('fecha');
             $table->enum('estado', ['pendiente', 'entregada', 'devuelta', 'cancelada', 'no_show'])
-                  ->default('pendiente');
+                ->default('pendiente');
             $table->timestamp('entregado_at')->nullable();
             $table->timestamp('devuelto_at')->nullable();
             $table->string('clave_unica')->nullable()->unique();   // NULL cuando la reserva ya no está activa
             $table->timestamps();
-        
+
             $table->index(['fecha', 'bloque_horario_id']);
             $table->index(['user_id', 'fecha']);
-});
+        });
     }
 
     /**

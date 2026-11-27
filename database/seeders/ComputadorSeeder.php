@@ -48,7 +48,7 @@ class ComputadorSeeder extends Seeder
         ]) {
             $aula = $aulas->get("{$bloque}|{$laboratorio}");
 
-            if (!$aula) {
+            if (! $aula) {
                 throw new \RuntimeException("No existe el aula {$bloque} {$laboratorio} para el computador {$serial}.");
             }
 

@@ -22,7 +22,7 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         // Validar estado activo de la cuenta institucional
-        if (!$user->esActivo()) {
+        if (! $user->esActivo()) {
             $this->guard()->logout();
             $request->session()->invalidate();
 
@@ -45,6 +45,7 @@ class LoginController extends Controller
         }
 
         $request->session()->put('two_factor_passed', true);
+
         return null; // continúa con el redirect normal
     }
 }

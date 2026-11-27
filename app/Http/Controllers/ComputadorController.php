@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Computador;
-use App\Models\Aula; // <-- Importante para cargar el listado de aulas
+use App\Models\Aula;
+use App\Models\Computador; // <-- Importante para cargar el listado de aulas
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -12,8 +12,8 @@ class ComputadorController extends Controller
     public function __construct()
     {
         $this->middleware('permission:ver-computadores|crear-computadores|editar-computadores|borrar-computadores', ['only' => ['index']]);
-        $this->middleware('permission:crear-computadores', ['only' => ['create','store']]);
-        $this->middleware('permission:editar-computadores', ['only' => ['edit','update']]);
+        $this->middleware('permission:crear-computadores', ['only' => ['create', 'store']]);
+        $this->middleware('permission:editar-computadores', ['only' => ['edit', 'update']]);
         $this->middleware('permission:borrar-computadores', ['only' => ['destroy']]);
     }
 
@@ -24,7 +24,7 @@ class ComputadorController extends Controller
 
         if ($search !== '') {
             $query->where(function ($query) use ($search) {
-                $like = '%' . $search . '%';
+                $like = '%'.$search.'%';
                 $query->where('marca', 'like', $like)
                     ->orWhere('modelo', 'like', $like)
                     ->orWhere('serial', 'like', $like)
@@ -81,6 +81,7 @@ class ComputadorController extends Controller
     {
         // Obtenemos todas las aulas para mostrarlas en un select
         $aulas = Aula::all();
+
         return view('computadores.create', compact('aulas'));
     }
 
@@ -88,21 +89,21 @@ class ComputadorController extends Controller
     {
         $this->validateRequest($request);
 
-        $computador = new Computador();
-        
+        $computador = new Computador;
+
         // Asignación campo por campo incluyendo aula_id
-        $computador->serial             = $request->serial;
-        $computador->aula_id            = $request->aula_id; // <-- Nuevo
-        $computador->tipo_equipo        = $request->tipo_equipo;
-        $computador->marca              = $request->marca;
-        $computador->modelo             = $request->modelo;
-        $computador->procesador         = $request->procesador;
-        $computador->ram_gb             = $request->ram_gb;
-        $computador->almacenamiento     = $request->almacenamiento;
-        $computador->sistema_operativo  = $request->sistema_operativo;
-        $computador->estado             = $request->estado;
-        $computador->condicion          = $request->condicion;
-        $computador->observaciones      = $request->observaciones;
+        $computador->serial = $request->serial;
+        $computador->aula_id = $request->aula_id; // <-- Nuevo
+        $computador->tipo_equipo = $request->tipo_equipo;
+        $computador->marca = $request->marca;
+        $computador->modelo = $request->modelo;
+        $computador->procesador = $request->procesador;
+        $computador->ram_gb = $request->ram_gb;
+        $computador->almacenamiento = $request->almacenamiento;
+        $computador->sistema_operativo = $request->sistema_operativo;
+        $computador->estado = $request->estado;
+        $computador->condicion = $request->condicion;
+        $computador->observaciones = $request->observaciones;
 
         $computador->save();
 
@@ -119,6 +120,7 @@ class ComputadorController extends Controller
     {
         // Pasamos el equipo y el listado de aulas a la vista de edición
         $aulas = Aula::all();
+
         return view('computadores.edit', compact('computador', 'aulas'));
     }
 
@@ -127,19 +129,19 @@ class ComputadorController extends Controller
         $this->validateRequest($request);
 
         // Asignación campo por campo incluyendo aula_id
-        $computador->serial             = $request->serial;
-        $computador->aula_id            = $request->aula_id; // <-- Nuevo
-        $computador->tipo_equipo        = $request->tipo_equipo;
-        $computador->marca              = $request->marca;
-        $computador->modelo             = $request->modelo;
-        $computador->procesador         = $request->procesador;
-        $computador->ram_gb             = $request->ram_gb;
-        $computador->almacenamiento     = $request->almacenamiento;
-        $computador->sistema_operativo  = $request->sistema_operativo;
-        $computador->estado             = $request->estado;
-        $computador->condicion          = $request->condicion;
-        $computador->observaciones      = $request->observaciones;
-        
+        $computador->serial = $request->serial;
+        $computador->aula_id = $request->aula_id; // <-- Nuevo
+        $computador->tipo_equipo = $request->tipo_equipo;
+        $computador->marca = $request->marca;
+        $computador->modelo = $request->modelo;
+        $computador->procesador = $request->procesador;
+        $computador->ram_gb = $request->ram_gb;
+        $computador->almacenamiento = $request->almacenamiento;
+        $computador->sistema_operativo = $request->sistema_operativo;
+        $computador->estado = $request->estado;
+        $computador->condicion = $request->condicion;
+        $computador->observaciones = $request->observaciones;
+
         $computador->save();
 
         return redirect()->route('computadores.index')
@@ -153,7 +155,7 @@ class ComputadorController extends Controller
         }
 
         $computador->update(['estado' => 'inactivo']);
-        
+
         return redirect()->route('computadores.index')
             ->with('success', 'El equipo ha sido marcado como inactivo correctamente.');
     }
@@ -161,7 +163,7 @@ class ComputadorController extends Controller
     public function validateRequest(Request $request)
     {
         $computador = $request->route('computador');
-        
+
         return $request->validate([
             'serial' => [
                 'required',

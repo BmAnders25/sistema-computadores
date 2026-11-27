@@ -100,7 +100,7 @@ class ComputerInventoryTest extends TestCase
         ]))
             ->assertOk()
             ->assertSee('estado=disponible', false)
-            ->assertSee('aula_id=' . $classroom->id, false);
+            ->assertSee('aula_id='.$classroom->id, false);
 
         $this->get(route('computadores.index', ['search' => 'PAGE-013']))
             ->assertOk()

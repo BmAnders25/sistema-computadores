@@ -14,7 +14,7 @@ class EntregaService
         DB::transaction(function () use ($reserva) {
             $reserva = Reserva::query()->lockForUpdate()->findOrFail($reserva->id);
 
-            if ($reserva->estado !== 'confirmada' || !$reserva->computador_id) {
+            if ($reserva->estado !== 'confirmada' || ! $reserva->computador_id) {
                 throw ValidationException::withMessages([
                     'reserva' => 'Solo se pueden registrar entregas de reservas confirmadas de computador.',
                 ]);
@@ -41,7 +41,7 @@ class EntregaService
         DB::transaction(function () use ($reserva) {
             $reserva = Reserva::query()->lockForUpdate()->findOrFail($reserva->id);
 
-            if ($reserva->estado !== 'entregada' || !$reserva->computador_id) {
+            if ($reserva->estado !== 'entregada' || ! $reserva->computador_id) {
                 throw ValidationException::withMessages([
                     'reserva' => 'Solo se pueden registrar devoluciones de computadores entregados.',
                 ]);

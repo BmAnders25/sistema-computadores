@@ -60,8 +60,8 @@ class ReservaSeeder extends Seeder
         ];
 
         foreach ($reservasDevueltas as [$usuario, $serial, $bloque, $fecha]) {
-            $entregadoAt = Carbon::parse($fecha->toDateString() . ' ' . $bloque->hora_inicio)->addMinutes(10);
-            $devueltoAt = Carbon::parse($fecha->toDateString() . ' ' . $bloque->hora_fin)->addMinutes(5);
+            $entregadoAt = Carbon::parse($fecha->toDateString().' '.$bloque->hora_inicio)->addMinutes(10);
+            $devueltoAt = Carbon::parse($fecha->toDateString().' '.$bloque->hora_fin)->addMinutes(5);
 
             $this->guardarReserva(
                 $usuario,

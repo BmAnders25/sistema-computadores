@@ -24,7 +24,7 @@ abstract class BasePruebaSeeder extends Seeder
         $role = Role::firstOrCreate(['name' => $rol, 'guard_name' => 'web']);
         $esEstudiante = $rol === 'Estudiante';
         $codigo = $esEstudiante
-            ? 'PRUEBA' . strtoupper(substr(hash('sha256', $email), 0, 12))
+            ? 'PRUEBA'.strtoupper(substr(hash('sha256', $email), 0, 12))
             : null;
 
         $user = User::updateOrCreate(
@@ -125,10 +125,8 @@ abstract class BasePruebaSeeder extends Seeder
         }
 
         $clave = match (true) {
-            in_array($estado, ['pendiente', 'entregada'], true) && $computador !== null =>
-                Reserva::claveEquipo($computador->id, $fecha, $bloque->id),
-            in_array($estado, ['pendiente', 'entregada'], true) && $aula !== null =>
-                Reserva::claveAula($aula->id, $fecha, $bloque->id),
+            in_array($estado, ['pendiente', 'entregada'], true) && $computador !== null => Reserva::claveEquipo($computador->id, $fecha, $bloque->id),
+            in_array($estado, ['pendiente', 'entregada'], true) && $aula !== null => Reserva::claveAula($aula->id, $fecha, $bloque->id),
             default => null,
         };
 

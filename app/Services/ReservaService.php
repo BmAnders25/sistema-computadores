@@ -16,7 +16,7 @@ class ReservaService
 {
     public function reservarEquipo(User $user, int $computadorId, string $fecha, int $bloqueId): Reserva
     {
-        $fecha  = Carbon::parse($fecha)->toDateString();
+        $fecha = Carbon::parse($fecha)->toDateString();
         $bloque = BloqueHorario::where('activo', true)->findOrFail($bloqueId);
 
         $this->validarVentana($fecha, $bloque);
@@ -28,7 +28,7 @@ class ReservaService
             // Se bloquea el aula para serializar reservas concurrentes sobre la misma sala
             $aula = Aula::lockForUpdate()->findOrFail($computador->aula_id);
 
-            if (!in_array(strtolower($aula->estado), ['activa', 'activo'], true)) {
+            if (! in_array(strtolower($aula->estado), ['activa', 'activo'], true)) {
                 $this->fallar('El aula de este equipo no está habilitada.');
             }
             if ($computador->estado !== 'disponible') {
@@ -58,7 +58,7 @@ class ReservaService
     /** Solo Docente/Administración (se controla con el permiso en el controlador). */
     public function reservarAula(User $user, int $aulaId, string $fecha, int $bloqueId): Reserva
     {
-        $fecha  = Carbon::parse($fecha)->toDateString();
+        $fecha = Carbon::parse($fecha)->toDateString();
         $bloque = BloqueHorario::where('activo', true)->findOrFail($bloqueId);
 
         $this->validarVentana($fecha, $bloque);
@@ -66,7 +66,7 @@ class ReservaService
         return DB::transaction(function () use ($user, $aulaId, $fecha, $bloque) {
             $aula = Aula::lockForUpdate()->findOrFail($aulaId);
 
-            if (!in_array(strtolower($aula->estado), ['activa', 'activo'], true)) {
+            if (! in_array(strtolower($aula->estado), ['activa', 'activo'], true)) {
                 $this->fallar('El aula no está habilitada.');
             }
 
@@ -76,7 +76,7 @@ class ReservaService
                 ->where('bloque_horario_id', $bloque->id)
                 ->where(function ($q) use ($aula) {
                     $q->where('aula_id', $aula->id)
-                      ->orWhereHas('computador', fn ($c) => $c->where('aula_id', $aula->id));
+                        ->orWhereHas('computador', fn ($c) => $c->where('aula_id', $aula->id));
                 })->exists();
             if ($ocupada) {
                 $this->fallar('El aula o alguno de sus equipos ya tiene reservas en ese horario.');
@@ -102,7 +102,7 @@ class ReservaService
             $this->fallar('Solo se pueden cancelar reservas pendientes.');
         }
 
-        if (!$esPersonal) {
+        if (! $esPersonal) {
             $minutosMin = config('reservas.minutos_min_cancelacion', 30);
             $limite = $reserva->bloque
                 ->inicioEn($reserva->fecha->toDateString())
@@ -139,7 +139,7 @@ class ReservaService
         $max = today()->addDays($diasAnticipacion);
 
         if (Carbon::parse($fecha)->gt($max)) {
-            $this->fallar('Solo puedes reservar con ' . $diasAnticipacion . ' días de anticipación.');
+            $this->fallar('Solo puedes reservar con '.$diasAnticipacion.' días de anticipación.');
         }
         if ($bloque->inicioEn($fecha)->isPast()) {
             $this->fallar('Ese bloque horario ya comenzó o ya pasó.');
@@ -148,7 +148,7 @@ class ReservaService
 
     private function validarLimiteDiario(User $user, string $fecha): void
     {
-        
+
         // Valor por defecto de 1 reserva diaria si la configuración no existe
         $maxReservas = config('reservas.max_reservas_dia_estudiante', 1);
 
@@ -176,11 +176,11 @@ class ReservaService
     {
         try {
             return Reserva::create($destino + [
-                'user_id'           => $user->id,
+                'user_id' => $user->id,
                 'bloque_horario_id' => $bloqueId,
-                'fecha'             => $fecha,
-                'estado'            => 'pendiente',
-                'clave_unica'       => $clave,
+                'fecha' => $fecha,
+                'estado' => 'pendiente',
+                'clave_unica' => $clave,
             ]);
         } catch (QueryException $e) {
             if ($e->getCode() === '23000') {      // violación del índice único

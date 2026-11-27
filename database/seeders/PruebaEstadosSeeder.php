@@ -15,9 +15,9 @@ class PruebaEstadosSeeder extends BasePruebaSeeder
         $usados = [];
 
         foreach ($estados as $indice => $estado) {
-            $inicio = Carbon::parse($mañana . ' ' . sprintf('%02d:00', 7 + ($indice * 2)), config('app.timezone'));
+            $inicio = Carbon::parse($mañana.' '.sprintf('%02d:00', 7 + ($indice * 2)), config('app.timezone'));
             $fin = $inicio->copy()->addHours(2);
-            $bloque = $this->bloque('PRUEBA-ESTADO-' . strtoupper($estado), $inicio, $fin);
+            $bloque = $this->bloque('PRUEBA-ESTADO-'.strtoupper($estado), $inicio, $fin);
             $equipo = $this->equipoLibre($user, $mañana, $bloque, $usados);
             $entregadoAt = in_array($estado, ['entregada', 'devuelta'], true)
                 ? $inicio->copy()->addMinutes(5)
@@ -33,7 +33,7 @@ class PruebaEstadosSeeder extends BasePruebaSeeder
                 $this->command?->warn("No se pudo crear el escenario con estado {$estado}.");
             }
 
-            $this->resumen($user, 'Estudiante', 'Estado ' . $estado, $reserva);
+            $this->resumen($user, 'Estudiante', 'Estado '.$estado, $reserva);
         }
     }
 }

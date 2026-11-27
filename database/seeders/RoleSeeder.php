@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
@@ -24,63 +24,63 @@ class RoleSeeder extends Seeder
         $canceladores = ['Estudiante', 'Docente', 'Celador', 'Administracion'];
 
         $matriz = [
-            'home'                   => $todos,
+            'home' => $todos,
             // Reservas (estudiante/docente solo ven y cancelan las suyas: se valida en una Policy)
-            'ver-disponibilidad'     => $todos,
-            'ver-reservas'           => $todos,
-            'crear-reservas'         => $usuarios,
-            'cancelar-reservas'      => $canceladores,
-            'reservar-aulas'         => ['Docente', 'Administracion'],
-            'editar-reservas'        => ['Administracion'],
-            'aprobar-reservas'      => ['Administracion', 'Celador'],
+            'ver-disponibilidad' => $todos,
+            'ver-reservas' => $todos,
+            'crear-reservas' => $usuarios,
+            'cancelar-reservas' => $canceladores,
+            'reservar-aulas' => ['Docente', 'Administracion'],
+            'editar-reservas' => ['Administracion'],
+            'aprobar-reservas' => ['Administracion', 'Celador'],
 
             // Entregas y devoluciones
-            'ver-entregas'           => $staff,
-            'registrar-entregas'     => $staff,
+            'ver-entregas' => $staff,
+            'registrar-entregas' => $staff,
             'registrar-devoluciones' => $staff,
             // Inventario
-            'ver-computadores'       => $staff,
-            'crear-computadores'     => $admin,
-            'editar-computadores'    => $admin,
-            'borrar-computadores'    => $admin,
+            'ver-computadores' => $staff,
+            'crear-computadores' => $admin,
+            'editar-computadores' => $admin,
+            'borrar-computadores' => $admin,
             // Aulas
-            'ver-aulas'              => $todos,
-            'crear-aulas'            => $admin,
-            'editar-aulas'           => $admin,
-            'borrar-aulas'           => $admin,
+            'ver-aulas' => $todos,
+            'crear-aulas' => $admin,
+            'editar-aulas' => $admin,
+            'borrar-aulas' => $admin,
             // Bloques horarios
-            'ver-bloques-horarios'   => $todos,
+            'ver-bloques-horarios' => $todos,
             'crear-bloques-horarios' => $admin,
-            'editar-bloques-horarios'=> $admin,
-            'borrar-bloques-horarios'=> $admin,
+            'editar-bloques-horarios' => $admin,
+            'borrar-bloques-horarios' => $admin,
             // Reservas
-            'ver-disponibilidad'     => $todos,
-            'ver-reservas'           => $todos,
-            'crear-reservas'         => $usuarios,
-            'editar-reservas'        => ['Administracion'],
-            'cancelar-reservas'      => $canceladores,
-            'reservar-aulas'         => ['Docente', 'Administracion'],
+            'ver-disponibilidad' => $todos,
+            'ver-reservas' => $todos,
+            'crear-reservas' => $usuarios,
+            'editar-reservas' => ['Administracion'],
+            'cancelar-reservas' => $canceladores,
+            'reservar-aulas' => ['Docente', 'Administracion'],
 
             // Mantenimiento (el celador reporta, administración corrige)
-            'ver-mantenimientos'     => $staff,
-            'crear-mantenimientos'   => $staff,
-            'editar-mantenimientos'  => $admin,
+            'ver-mantenimientos' => $staff,
+            'crear-mantenimientos' => $staff,
+            'editar-mantenimientos' => $admin,
             // Reportes y administración
-            'ver-reportes'           => $admin,
-            'ver-estadistica'        => $admin,
-            'ver-configuracion'      => $admin,
-            'ver-usuarios'           => $admin,
-            'crear-usuarios'         => $admin,
-            'editar-usuarios'        => $admin,
-            'borrar-usuarios'        => $admin,
-            'ver-roles'              => $admin,
-            'crear-roles'            => $admin,
-            'editar-roles'           => $admin,
-            'borrar-roles'           => $admin,
-            'ver-permisos'           => $admin,
-            'crear-permisos'         => $admin,
-            'editar-permisos'        => $admin,
-            'borrar-permisos'        => $admin,
+            'ver-reportes' => $admin,
+            'ver-estadistica' => $admin,
+            'ver-configuracion' => $admin,
+            'ver-usuarios' => $admin,
+            'crear-usuarios' => $admin,
+            'editar-usuarios' => $admin,
+            'borrar-usuarios' => $admin,
+            'ver-roles' => $admin,
+            'crear-roles' => $admin,
+            'editar-roles' => $admin,
+            'borrar-roles' => $admin,
+            'ver-permisos' => $admin,
+            'crear-permisos' => $admin,
+            'editar-permisos' => $admin,
+            'borrar-permisos' => $admin,
         ];
 
         foreach ($matriz as $permiso => $roles) {

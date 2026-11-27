@@ -10,7 +10,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
         'name', 'email', 'password', 'theme',
@@ -22,9 +22,9 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'email_verified_at'     => 'datetime',
-        'password'              => 'hashed',
-        'two_factor_enabled'    => 'boolean',
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'two_factor_enabled' => 'boolean',
         'two_factor_expires_at' => 'datetime',
     ];
 
@@ -32,17 +32,19 @@ class User extends Authenticatable
     {
         return $this->estado === 'activo';
     }
-    public function esInstitucional(): bool
-{
-    return in_array(
-        strtolower(\Illuminate\Support\Str::after($this->email, '@')),
-        config('institucional.dominios', []),
-        true
-    );
-}
 
-    public function requiereDosPasos(): bool{
-    return $this->esInstitucional() || $this->two_factor_enabled;
+    public function esInstitucional(): bool
+    {
+        return in_array(
+            strtolower(\Illuminate\Support\Str::after($this->email, '@')),
+            config('institucional.dominios', []),
+            true
+        );
+    }
+
+    public function requiereDosPasos(): bool
+    {
+        return $this->esInstitucional() || $this->two_factor_enabled;
     }
 
     public function reservas()

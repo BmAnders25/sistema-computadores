@@ -9,9 +9,13 @@ use Illuminate\View\Component;
 class BootstrapInfoBox extends Component
 {
     public $title;
+
     public $text;
+
     public $icon;
+
     public $theme;
+
     /**
      * Create a new component instance.
      */

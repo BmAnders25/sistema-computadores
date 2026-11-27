@@ -30,7 +30,7 @@ class PruebasSeedersTest extends TestCase
         $this->app['env'] = 'testing';
         $this->expectException(HttpException::class);
 
-        (new PruebaRecordatorioInicioSeeder())->run();
+        (new PruebaRecordatorioInicioSeeder)->run();
     }
 
     public function test_test_seeders_are_repeatable_local_only_and_do_not_send_confirmations(): void
@@ -40,16 +40,16 @@ class PruebasSeedersTest extends TestCase
         Notification::fake();
         $aulas = [
             Aula::create([
-            'bloque' => 'Pruebas',
-            'nombre' => 'LAB-SEEDER-A',
-            'capacidad' => 20,
-            'estado' => 'activo',
+                'bloque' => 'Pruebas',
+                'nombre' => 'LAB-SEEDER-A',
+                'capacidad' => 20,
+                'estado' => 'activo',
             ]),
             Aula::create([
-            'bloque' => 'Pruebas',
-            'nombre' => 'LAB-SEEDER-B',
-            'capacidad' => 20,
-            'estado' => 'activo',
+                'bloque' => 'Pruebas',
+                'nombre' => 'LAB-SEEDER-B',
+                'capacidad' => 20,
+                'estado' => 'activo',
             ]),
         ];
         for ($indice = 1; $indice <= 12; $indice++) {

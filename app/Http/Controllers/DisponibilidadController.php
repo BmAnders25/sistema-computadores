@@ -21,7 +21,7 @@ class DisponibilidadController extends Controller
             ->get();
 
         [$fechaInicio, $fechaFin] = $this->defaultRange($bloques);
-        $validationErrors = new MessageBag();
+        $validationErrors = new MessageBag;
         $bloqueSeleccionado = null;
         $computadores = collect();
 
@@ -59,7 +59,7 @@ class DisponibilidadController extends Controller
                 } else {
                     $bloqueSeleccionado = $this->findMatchingBlock($bloques, $inicio, $fin);
 
-                    if (!$bloqueSeleccionado) {
+                    if (! $bloqueSeleccionado) {
                         $validationErrors->add(
                             'fecha_fin',
                             'El rango debe coincidir con uno de los bloques horarios activos.'
@@ -124,21 +124,20 @@ class DisponibilidadController extends Controller
             fn (BloqueHorario $bloque) => $bloque->inicioEn($fecha->toDateString())->isFuture()
         );
 
-        if (!$bloque) {
+        if (! $bloque) {
             $fecha->addDay();
             $bloque = $bloques->first();
         }
 
         return [
             $bloque->inicioEn($fecha->toDateString())->format('Y-m-d\TH:i'),
-            Carbon::parse($fecha->toDateString() . ' ' . $bloque->hora_fin)->format('Y-m-d\TH:i'),
+            Carbon::parse($fecha->toDateString().' '.$bloque->hora_fin)->format('Y-m-d\TH:i'),
         ];
     }
 
     private function findMatchingBlock(Collection $bloques, Carbon $inicio, Carbon $fin): ?BloqueHorario
     {
-        return $bloques->first(fn (BloqueHorario $bloque) =>
-            substr((string) $bloque->hora_inicio, 0, 5) === $inicio->format('H:i')
+        return $bloques->first(fn (BloqueHorario $bloque) => substr((string) $bloque->hora_inicio, 0, 5) === $inicio->format('H:i')
             && substr((string) $bloque->hora_fin, 0, 5) === $fin->format('H:i')
         );
     }

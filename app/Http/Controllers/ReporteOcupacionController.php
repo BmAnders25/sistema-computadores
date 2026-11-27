@@ -6,10 +6,10 @@ use App\Exports\OcupacionExport;
 use App\Http\Requests\ReporteOcupacionRequest;
 use App\Models\Aula;
 use App\Services\EstadisticasService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReporteOcupacionController extends Controller
@@ -51,9 +51,9 @@ class ReporteOcupacionController extends Controller
         $kpis = $estadisticas->kpis($desde, $hasta, $aulaId, null, $estado);
         $detalle = $estadisticas->detalleOcupacion($desde, $hasta, $aulaId, null, $estado);
 
-        $nombre = 'ocupacion-' . $desde->toDateString() . '-a-' . $hasta->toDateString() . '.xlsx';
+        $nombre = 'ocupacion-'.$desde->toDateString().'-a-'.$hasta->toDateString().'.xlsx';
         $aula = $aulaId ? Aula::query()->find($aulaId) : null;
-        $aulaNombre = $aula ? 'Bloque ' . $aula->bloque . ' · ' . $aula->nombre : null;
+        $aulaNombre = $aula ? 'Bloque '.$aula->bloque.' · '.$aula->nombre : null;
 
         return Excel::download(
             new OcupacionExport(
@@ -87,7 +87,7 @@ class ReporteOcupacionController extends Controller
             'generadoPor' => auth()->user()?->name,
         ])->setPaper('a4', 'landscape');
 
-        $nombre = 'ocupacion-' . $desde->toDateString() . '-a-' . $hasta->toDateString() . '.pdf';
+        $nombre = 'ocupacion-'.$desde->toDateString().'-a-'.$hasta->toDateString().'.pdf';
 
         return $pdf->download($nombre);
     }

@@ -25,7 +25,7 @@ class UserController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         if ($search !== '') {
-            $like = '%' . $search . '%';
+            $like = '%'.$search.'%';
             $query->where(function ($query) use ($like) {
                 $query->where('name', 'like', $like)
                     ->orWhere('email', 'like', $like)
@@ -58,6 +58,7 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::pluck('name', 'name')->all();
+
         return view('users.create', compact('roles'));
     }
 
@@ -66,13 +67,13 @@ class UserController extends Controller
         $datos = $this->validateRequest($request);
 
         $user = User::create([
-            'name'                 => $datos['name'],
-            'email'                => $datos['email'],
-            'password'             => $datos['password'],   // el cast 'hashed' lo encripta
+            'name' => $datos['name'],
+            'email' => $datos['email'],
+            'password' => $datos['password'],   // el cast 'hashed' lo encripta
             'codigo_institucional' => $datos['codigo_institucional'] ?? null,
-            'programa'             => $datos['programa'] ?? null,
-            'estado'               => $datos['estado'],
-            'two_factor_enabled'   => $request->boolean('two_factor_enabled'),
+            'programa' => $datos['programa'] ?? null,
+            'estado' => $datos['estado'],
+            'two_factor_enabled' => $request->boolean('two_factor_enabled'),
         ]);
 
         $user->syncRoles([$datos['roles']]);
@@ -83,12 +84,13 @@ class UserController extends Controller
     public function show(string $id)
     {
         $user = User::with('roles')->findOrFail($id);
+
         return view('users.show', compact('user'));
     }
 
     public function edit(string $id)
     {
-        $user  = User::with('roles')->findOrFail($id);
+        $user = User::with('roles')->findOrFail($id);
         $roles = Role::pluck('name', 'name')->all();
 
         return view('users.edit', compact('user', 'roles'));
@@ -96,7 +98,7 @@ class UserController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $user  = User::findOrFail($id);
+        $user = User::findOrFail($id);
         $datos = $this->validateRequest($request, $user->id);
 
         // Evita que un administrador se bloquee a sí mismo
@@ -110,15 +112,15 @@ class UserController extends Controller
         }
 
         $campos = [
-            'name'                 => $datos['name'],
-            'email'                => $datos['email'],
+            'name' => $datos['name'],
+            'email' => $datos['email'],
             'codigo_institucional' => $datos['codigo_institucional'] ?? null,
-            'programa'             => $datos['programa'] ?? null,
-            'estado'               => $datos['estado'],
-            'two_factor_enabled'   => $request->boolean('two_factor_enabled'),
+            'programa' => $datos['programa'] ?? null,
+            'estado' => $datos['estado'],
+            'two_factor_enabled' => $request->boolean('two_factor_enabled'),
         ];
 
-        if (!empty($datos['password'])) {
+        if (! empty($datos['password'])) {
             $campos['password'] = $datos['password'];
         }
 
@@ -142,7 +144,7 @@ class UserController extends Controller
     private function validateRequest(Request $request, ?int $id = null): array
     {
         $dominios = config('institucional.dominios', ['unipamplona.edu.co']);
-        $regexDominios = '/@(' . implode('|', array_map('preg_quote', $dominios)) . ')$/i';
+        $regexDominios = '/@('.implode('|', array_map('preg_quote', $dominios)).')$/i';
 
         $rol = $request->input('roles');
         $requiereDominio = in_array($rol, self::ROLES_INSTITUCIONALES, true);
@@ -150,25 +152,25 @@ class UserController extends Controller
 
         $emailRules = ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($id)];
         if ($requiereDominio) {
-            $emailRules[] = 'regex:' . $regexDominios;
+            $emailRules[] = 'regex:'.$regexDominios;
         }
 
         return $request->validate([
-            'name'                 => 'required|string|max:255',
-            'email'                => $emailRules,
-            'password'             => [$id ? 'nullable' : 'required', 'min:8', 'same:confirm-password'],
-            'roles'                => ['required', 'string', Rule::exists('roles', 'name')],
+            'name' => 'required|string|max:255',
+            'email' => $emailRules,
+            'password' => [$id ? 'nullable' : 'required', 'min:8', 'same:confirm-password'],
+            'roles' => ['required', 'string', Rule::exists('roles', 'name')],
             'codigo_institucional' => [Rule::requiredIf($esEstudiante), 'nullable', 'alpha_dash', 'max:30',
-                                       Rule::unique('users', 'codigo_institucional')->ignore($id)],
-            'programa'             => [Rule::requiredIf($esEstudiante), 'nullable', 'string', 'max:100'],
-            'estado'               => ['required', Rule::in(['activo', 'inactivo', 'suspendido'])],
+                Rule::unique('users', 'codigo_institucional')->ignore($id)],
+            'programa' => [Rule::requiredIf($esEstudiante), 'nullable', 'string', 'max:100'],
+            'estado' => ['required', Rule::in(['activo', 'inactivo', 'suspendido'])],
         ], [
-            'email.regex'                    => 'Los usuarios con rol Estudiante o Docente deben usar un correo institucional (' . implode(', ', $dominios) . ').',
-            'password.min'                   => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.same'                  => 'La confirmación de la contraseña no coincide.',
-            'codigo_institucional.required'  => 'El código institucional es obligatorio para estudiantes.',
-            'codigo_institucional.unique'    => 'Ese código institucional ya está registrado.',
-            'programa.required'              => 'El programa académico es obligatorio para estudiantes.',
+            'email.regex' => 'Los usuarios con rol Estudiante o Docente deben usar un correo institucional ('.implode(', ', $dominios).').',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.same' => 'La confirmación de la contraseña no coincide.',
+            'codigo_institucional.required' => 'El código institucional es obligatorio para estudiantes.',
+            'codigo_institucional.unique' => 'Ese código institucional ya está registrado.',
+            'programa.required' => 'El programa académico es obligatorio para estudiantes.',
         ]);
     }
 }

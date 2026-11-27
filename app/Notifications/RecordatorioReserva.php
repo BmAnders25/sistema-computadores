@@ -42,9 +42,9 @@ abstract class RecordatorioReserva extends Notification
     {
         $datos = $this->toArray($notifiable);
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject($datos['titulo'])
-            ->greeting('Hola ' . $notifiable->name)
+            ->greeting('Hola '.$notifiable->name)
             ->line($datos['mensaje'])
             ->action('Ver mis reservas', $datos['url'])
             ->salutation('S.R.C. · Universidad de Pamplona');
@@ -58,21 +58,21 @@ abstract class RecordatorioReserva extends Notification
             config('app.timezone')
         )->locale('es')->translatedFormat('d \d\e F \d\e Y');
         $inicio = $bloque
-            ? Carbon::parse($this->reserva->fecha->toDateString() . ' ' . $bloque->hora_inicio, config('app.timezone'))->format('H:i')
+            ? Carbon::parse($this->reserva->fecha->toDateString().' '.$bloque->hora_inicio, config('app.timezone'))->format('H:i')
             : null;
         $fin = $bloque
-            ? Carbon::parse($this->reserva->fecha->toDateString() . ' ' . $bloque->hora_fin, config('app.timezone'))->format('H:i')
+            ? Carbon::parse($this->reserva->fecha->toDateString().' '.$bloque->hora_fin, config('app.timezone'))->format('H:i')
             : null;
         $horario = $inicio && $fin ? "{$inicio} a {$fin}" : 'el horario reservado';
         $nombreBloque = $bloque?->nombre ?? 'bloque horario';
         $recurso = $this->reserva->aula_id
             ? 'aula completa'
-            : trim(($this->reserva->computador?->marca ?? 'computador') . ' ' . ($this->reserva->computador?->modelo ?? ''));
+            : trim(($this->reserva->computador?->marca ?? 'computador').' '.($this->reserva->computador?->modelo ?? ''));
 
         $mensaje = "Tu reserva de {$recurso} {$this->accion()} en {$nombreBloque} ({$horario}), el {$fecha}.";
 
         if ($instruccion = $this->instruccion()) {
-            $mensaje .= ' ' . $instruccion;
+            $mensaje .= ' '.$instruccion;
         }
 
         return $mensaje;

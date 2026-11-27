@@ -3,20 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolController extends Controller
 {
-    function __construct()
+    public function __construct()
     {
-         $this->middleware('permission:ver-roles|crear-roles|editar-roles|borrar-roles', ['only' => ['index']]);
-         $this->middleware('permission:crear-roles', ['only' => ['create','store']]);
-         $this->middleware('permission:editar-roles', ['only' => ['edit','update']]);
-         $this->middleware('permission:borrar-roles', ['only' => ['destroy']]);
+        $this->middleware('permission:ver-roles|crear-roles|editar-roles|borrar-roles', ['only' => ['index']]);
+        $this->middleware('permission:crear-roles', ['only' => ['create', 'store']]);
+        $this->middleware('permission:editar-roles', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:borrar-roles', ['only' => ['destroy']]);
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -26,7 +26,7 @@ class RolController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         if ($search !== '') {
-            $query->where('name', 'like', '%' . $search . '%');
+            $query->where('name', 'like', '%'.$search.'%');
         }
 
         $totalRoles = Role::count();
@@ -44,7 +44,8 @@ class RolController extends Controller
     public function create()
     {
         $permission = Permission::get();
-        return view('roles.create',compact('permission'));
+
+        return view('roles.create', compact('permission'));
     }
 
     /**
@@ -54,16 +55,16 @@ class RolController extends Controller
     {
         // Validar la entrada de datos
         $this->validateRequest($request);
-    
+
         $role = Role::create(['name' => $request->input('name')]);
-        //$role->syncPermissions($request->input('permission'));
+        // $role->syncPermissions($request->input('permission'));
         $permissions = [];
         $post_permissions = $request->input('permission');
         foreach ($post_permissions as $key => $val) {
             $permissions[intval($val)] = intval($val);
         }
         $role->syncPermissions($permissions);
-    
+
         return redirect()->route('roles.index');
     }
 
@@ -74,11 +75,11 @@ class RolController extends Controller
     {
         $role = Role::find($id);
         $permission = Permission::get();
-        $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id",$id)
-        ->pluck('role_has_permissions.permission_id','role_has_permissions.permission_id')
-        ->all();
+        $rolePermissions = DB::table('role_has_permissions')->where('role_has_permissions.role_id', $id)
+            ->pluck('role_has_permissions.permission_id', 'role_has_permissions.permission_id')
+            ->all();
 
-        return view('roles.show',compact('role','permission','rolePermissions'));
+        return view('roles.show', compact('role', 'permission', 'rolePermissions'));
     }
 
     /**
@@ -88,11 +89,11 @@ class RolController extends Controller
     {
         $role = Role::find($id);
         $permission = Permission::get();
-        $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id",$id)
-            ->pluck('role_has_permissions.permission_id','role_has_permissions.permission_id')
+        $rolePermissions = DB::table('role_has_permissions')->where('role_has_permissions.role_id', $id)
+            ->pluck('role_has_permissions.permission_id', 'role_has_permissions.permission_id')
             ->all();
-    
-        return view('roles.edit',compact('role','permission','rolePermissions'));
+
+        return view('roles.edit', compact('role', 'permission', 'rolePermissions'));
     }
 
     /**
@@ -102,19 +103,19 @@ class RolController extends Controller
     {
         // Validar la entrada de datos
         $this->validateRequest($request, $id);
-    
+
         $role = Role::find($id);
         $role->name = $request->input('name');
         $role->save();
-    
+
         $permissions = [];
         $post_permissions = $request->input('permission');
         foreach ($post_permissions as $key => $val) {
             $permissions[intval($val)] = intval($val);
         }
         $role->syncPermissions($permissions);
-    
-        return redirect()->route('roles.index'); 
+
+        return redirect()->route('roles.index');
     }
 
     /**
@@ -122,7 +123,8 @@ class RolController extends Controller
      */
     public function destroy(string $id)
     {
-        DB::table("roles")->where('id',$id)->delete();
+        DB::table('roles')->where('id', $id)->delete();
+
         return redirect()->route('roles.index');
     }
 
@@ -141,5 +143,4 @@ class RolController extends Controller
             'permission' => 'required|array',
         ]);
     }
-
 }

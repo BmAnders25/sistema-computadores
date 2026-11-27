@@ -18,7 +18,7 @@ return new class extends Migration
             $table->time('hora_fin');
             $table->boolean('activo')->default(true);
             $table->timestamps();
-});
+        });
     }
 
     /**

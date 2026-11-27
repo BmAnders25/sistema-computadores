@@ -182,21 +182,21 @@ class HerramientasPruebaTest extends TestCase
         $admin = $this->userWithRole('Administracion');
         $aulas = [
             Aula::create([
-            'bloque' => 'Bloque A',
-            'nombre' => 'LAB-REINICIO-A',
-            'capacidad' => 20,
-            'estado' => 'activo',
+                'bloque' => 'Bloque A',
+                'nombre' => 'LAB-REINICIO-A',
+                'capacidad' => 20,
+                'estado' => 'activo',
             ]),
             Aula::create([
-            'bloque' => 'Bloque A',
-            'nombre' => 'LAB-REINICIO-B',
-            'capacidad' => 20,
-            'estado' => 'activo',
+                'bloque' => 'Bloque A',
+                'nombre' => 'LAB-REINICIO-B',
+                'capacidad' => 20,
+                'estado' => 'activo',
             ]),
         ];
         foreach ($aulas as $indice => $aula) {
             Computador::create([
-                'serial' => 'TOOLS-RESTART-' . ($indice + 1),
+                'serial' => 'TOOLS-RESTART-'.($indice + 1),
                 'aula_id' => $aula->id,
                 'tipo_equipo' => 'escritorio',
                 'marca' => 'Dell',

@@ -9,13 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Computador extends Model
 {
     use HasUuids;
-    
-    protected $table = 'computadores'; 
+
+    protected $table = 'computadores';
 
     protected $fillable = [
         'codigo',
         'serial',
-        'aula_id',         
+        'aula_id',
         'bloque',
         'laboratorio_aula',
         'tipo_equipo',
@@ -32,7 +32,7 @@ class Computador extends Model
 
     public function uniqueIds(): array
     {
-        return ['codigo']; 
+        return ['codigo'];
     }
 
     /**
@@ -42,7 +42,11 @@ class Computador extends Model
     {
         return $this->belongsTo(Aula::class, 'aula_id');
     }
-    public function reservas() { return $this->hasMany(Reserva::class); }
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class);
+    }
 
     // Conversión de tipos de datos.
     protected $casts = [

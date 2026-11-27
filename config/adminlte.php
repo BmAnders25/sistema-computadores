@@ -188,7 +188,7 @@ return [
     'classes_auth_icon' => 'fa-fw text-light',
     'classes_auth_btn' => 'btn-flat btn-light',*/
 
-    /* Tonos azules 
+    /* Tonos azules
     'classes_auth_card' => '',
     'classes_auth_header' => 'bg-gradient-info',
     'classes_auth_body' => '',
@@ -196,7 +196,7 @@ return [
     'classes_auth_icon' => 'fa-lg text-info',
     'classes_auth_btn' => 'btn-flat btn-primary',*/
 
-    /* predefinido 
+    /* predefinido
     'classes_auth_card' => 'card-outline card-primary',
     'classes_auth_header' => '',
     'classes_auth_body' => '',
@@ -204,7 +204,7 @@ return [
     'classes_auth_icon' => '',
     'classes_auth_btn' => 'btn-flat btn-primary',*/
 
-    /* Personalizado 
+    /* Personalizado
    'classes_auth_card' => 'bg-gradient-dark',
     'classes_auth_header' => 'bg-gradient-info',
     'classes_auth_body' => 'bg-gradient-dark',
@@ -217,7 +217,6 @@ return [
     'classes_auth_footer' => 'text-center',
     'classes_auth_icon' => 'fa-lg text-primary',
     'classes_auth_btn' => 'btn-flat btn-primary',
-
 
     /*
     |--------------------------------------------------------------------------
@@ -335,131 +334,131 @@ return [
     */
 
     // Reemplaza el arreglo 'menu' por este (mantiene los mismos items y permisos)
-'menu' => [
-    ['type' => 'navbar-search', 'text' => 'Buscar', 'topnav_right' => true],
-    ['type' => 'fullscreen-widget', 'topnav_right' => true],
-    [
-        'type' => 'navbar-notification',
-        'id' => 'src-notificaciones',
-        'icon' => 'fas fa-bell',
-        'aria_label' => 'Notificaciones',
-        'label' => '',
-        'label_color' => 'danger',
-        'topnav_right' => true,
-        'dropdown_mode' => true,
-        'url' => '/notificaciones',
-        'dropdown_flabel' => 'Ver todas',
-        'href' => '/notificaciones',
-        'update_cfg' => [
-            'route' => 'notificaciones.resumen',
-            'period' => 30,
+    'menu' => [
+        ['type' => 'navbar-search', 'text' => 'Buscar', 'topnav_right' => true],
+        ['type' => 'fullscreen-widget', 'topnav_right' => true],
+        [
+            'type' => 'navbar-notification',
+            'id' => 'src-notificaciones',
+            'icon' => 'fas fa-bell',
+            'aria_label' => 'Notificaciones',
+            'label' => '',
+            'label_color' => 'danger',
+            'topnav_right' => true,
+            'dropdown_mode' => true,
+            'url' => '/notificaciones',
+            'dropdown_flabel' => 'Ver todas',
+            'href' => '/notificaciones',
+            'update_cfg' => [
+                'route' => 'notificaciones.resumen',
+                'period' => 30,
+            ],
+        ],
+        ['type' => 'sidebar-menu-search', 'text' => 'Buscar'],
+
+        [
+            'text' => 'Dashboard',
+            'route' => 'dashboard',
+            'can' => ['ver-estadistica'],
+            'icon' => 'fas fa-chart-line',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+        ...$herramientasPruebaMenu,
+
+        // --- Reservas ---
+        ['header' => 'RESERVAS', 'classes' => 'text-uppercase text-light small fw-semibold'],
+        [
+            'text' => 'Disponibilidad',
+            'route' => 'disponibilidad.index',
+            'can' => ['ver-disponibilidad'],
+            'icon' => 'fas fa-calendar-alt',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+        [
+            'text' => 'Mis reservas',
+            'route' => 'reservas.index',
+            'can' => ['ver-reservas'],
+            'icon' => 'fas fa-calendar-check',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+        [
+            'text' => 'Entregas y devoluciones',
+            'route' => 'entregas.index',
+            'can' => ['ver-entregas'],
+            'icon' => 'fas fa-hand-holding',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+
+        // --- Inventario ---
+        ['header' => 'INVENTARIO', 'classes' => 'text-uppercase text-light small fw-semibold'],
+        [
+            'text' => 'Computadores',
+            'route' => 'computadores.index',
+            'can' => ['ver-computadores'],
+            'icon' => 'fas fa-desktop',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+        [
+            'text' => 'Aulas',
+            'route' => 'aulas.index',
+            'can' => ['ver-aulas'],
+            'icon' => 'fas fa-building',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+        [
+            'text' => 'Bloques horarios',
+            'route' => 'bloques-horarios.index',
+            'can' => ['ver-bloques-horarios'],
+            'icon' => 'fas fa-clock',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+        [
+            'text' => 'Reportes de ocupación',
+            'route' => 'reportes.ocupacion',
+            'can' => ['ver-reportes'],
+            'icon' => 'fas fa-chart-bar',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+        // --- Configuración ---
+        ['header' => 'CONFIGURACIÓN / ADMINISTRACIÓN', 'classes' => 'text-uppercase text-light small fw-semibold'],
+        [
+            'text' => 'Información institucional',
+            'route' => 'configuracion.index',
+            'icon' => 'fas fa-university',
+            'icon_color' => 'white',
+            'classes' => 'text-sm',
+        ],
+        [
+            'text' => 'Seguridad',
+            'icon' => 'fas fa-tools',
+            'classes' => 'text-uppercase text-light small fw-semibold',
+            'can' => ['ver-usuarios'],
+            'submenu' => [
+                ['text' => 'Usuarios', 'route' => 'users.index', 'can' => ['ver-usuarios'],
+                    'icon' => 'fas fa-users', 'icon_color' => 'white', 'classes' => 'text-sm'],
+                ['text' => 'Roles', 'route' => 'roles.index', 'can' => ['ver-roles'],
+                    'icon' => 'fas fa-user-cog', 'icon_color' => 'white', 'classes' => 'text-sm'],
+                ['text' => 'Permisos', 'route' => 'permissions.index', 'can' => ['ver-permisos'],
+                    'icon' => 'fas fa-user-shield', 'icon_color' => 'white', 'classes' => 'text-sm'],
+            ],
+        ],
+
+        [
+            'text' => 'Cerrar Sesión',
+            'url' => '/logout',
+            'icon' => 'fas fa-power-off',
+            'icon_color' => 'white',
+            'classes' => 'text-sm text-white logout-btn',
         ],
     ],
-    ['type' => 'sidebar-menu-search', 'text' => 'Buscar'],
-
-    [
-        'text'    => 'Dashboard',
-        'route'   => 'dashboard',
-        'can'     => ['ver-estadistica'],
-        'icon'    => 'fas fa-chart-line',
-        'icon_color' => 'white',
-        'classes' => 'text-sm',
-    ],
-    ...$herramientasPruebaMenu,
-
-    // --- Reservas ---
-    ['header' => 'RESERVAS', 'classes' => 'text-uppercase text-light small fw-semibold'],
-    [
-        'text' => 'Disponibilidad',
-        'route' => 'disponibilidad.index',
-        'can' => ['ver-disponibilidad'],
-        'icon' => 'fas fa-calendar-alt',
-        'icon_color' => 'white',
-        'classes' => 'text-sm',
-    ],
-    [
-        'text' => 'Mis reservas',
-        'route' => 'reservas.index',
-        'can' => ['ver-reservas'],
-        'icon' => 'fas fa-calendar-check',
-        'icon_color' => 'white',
-        'classes' => 'text-sm',
-    ],
-    [
-        'text' => 'Entregas y devoluciones',
-        'route' => 'entregas.index',
-        'can' => ['ver-entregas'],
-        'icon' => 'fas fa-hand-holding',
-        'icon_color' => 'white',
-        'classes' => 'text-sm',
-    ],
-
-    // --- Inventario ---
-    ['header' => 'INVENTARIO', 'classes' => 'text-uppercase text-light small fw-semibold'],
-    [
-        'text'       => 'Computadores',
-        'route'      => 'computadores.index',
-        'can'        => ['ver-computadores'],
-        'icon'       => 'fas fa-desktop',
-        'icon_color' => 'white',
-        'classes'    => 'text-sm',
-    ],
-    [
-        'text'       => 'Aulas',
-        'route'      => 'aulas.index',
-        'can'        => ['ver-aulas'],
-        'icon'       => 'fas fa-building',
-        'icon_color' => 'white',
-        'classes'    => 'text-sm',
-    ],
-    [
-        'text'       => 'Bloques horarios',
-        'route'      => 'bloques-horarios.index',
-        'can'        => ['ver-bloques-horarios'],
-        'icon'       => 'fas fa-clock',
-        'icon_color' => 'white',
-        'classes'    => 'text-sm',
-    ],
-    [
-        'text'       => 'Reportes de ocupación',
-        'route'      => 'reportes.ocupacion',
-        'can'        => ['ver-reportes'],
-        'icon'       => 'fas fa-chart-bar',
-        'icon_color' => 'white',
-        'classes'    => 'text-sm',
-    ],
-    // --- Configuración ---
-    ['header' => 'CONFIGURACIÓN / ADMINISTRACIÓN', 'classes' => 'text-uppercase text-light small fw-semibold'],
-    [
-        'text'       => 'Información institucional',
-        'route'      => 'configuracion.index',
-        'icon'       => 'fas fa-university',
-        'icon_color' => 'white',
-        'classes'    => 'text-sm',
-    ],
-    [
-        'text'    => 'Seguridad',
-        'icon'    => 'fas fa-tools',
-        'classes' => 'text-uppercase text-light small fw-semibold',
-        'can'     => ['ver-usuarios'],
-        'submenu' => [
-            ['text' => 'Usuarios', 'route' => 'users.index', 'can' => ['ver-usuarios'],
-             'icon' => 'fas fa-users', 'icon_color' => 'white', 'classes' => 'text-sm'],
-            ['text' => 'Roles', 'route' => 'roles.index', 'can' => ['ver-roles'],
-             'icon' => 'fas fa-user-cog', 'icon_color' => 'white', 'classes' => 'text-sm'],
-            ['text' => 'Permisos', 'route' => 'permissions.index', 'can' => ['ver-permisos'],
-             'icon' => 'fas fa-user-shield', 'icon_color' => 'white', 'classes' => 'text-sm'],
-        ],
-    ],
-
-    [
-        'text'       => 'Cerrar Sesión',
-        'url'        => '/logout',
-        'icon'       => 'fas fa-power-off',
-        'icon_color' => 'white',
-        'classes'    => 'text-sm text-white logout-btn',
-    ],
-],
 
     /*
     |--------------------------------------------------------------------------
@@ -503,7 +502,7 @@ return [
                     'type' => 'js',
                     'asset' => false, // Es un enlace externo
                     'location' => '//code.jquery.com/jquery-3.6.0.min.js',
-                    /*'location' => 'vendor/jquery/jquery.min.js',*/
+                    /* 'location' => 'vendor/jquery/jquery.min.js', */
                 ],
             ],
         ],
@@ -513,25 +512,25 @@ return [
                 [
                     'type' => 'js',
                     'asset' => false,
-                    /*'location' => 'vendor/datatables/js/jquery.dataTables.min.js',*/
+                    /* 'location' => 'vendor/datatables/js/jquery.dataTables.min.js', */
                     'location' => '//cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js',
                 ],
                 [
                     'type' => 'css',
                     'asset' => false,
-                    /*'location' => 'vendor/datatables/css/jquery.dataTables.min.css',*/
+                    /* 'location' => 'vendor/datatables/css/jquery.dataTables.min.css', */
                     'location' => '//cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css',
                 ],
                 [
                     'type' => 'js',
                     'asset' => false,
-                    /*'location' => 'vendor/datatables/js/dataTables.bootstrap4.min.js',*/
+                    /* 'location' => 'vendor/datatables/js/dataTables.bootstrap4.min.js', */
                     'location' => '//cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js',
                 ],
                 [
                     'type' => 'css',
                     'asset' => false,
-                    /*'location' => 'vendor/datatables/css/dataTables.bootstrap4.min.css',*/
+                    /* 'location' => 'vendor/datatables/css/dataTables.bootstrap4.min.css', */
                     'location' => '//cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css',
                 ],
             ],
@@ -613,7 +612,7 @@ return [
                     'type' => 'js',
                     'asset' => true,
                     'location' => 'vendor/chart.js/Chart.bundle.min.js',
-                    /*'location' => '//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js',*/
+                    /* 'location' => '//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js', */
                 ],
             ],
         ],
@@ -659,13 +658,13 @@ return [
                     'type' => 'js',
                     'asset' => true,
                     'location' => 'vendor/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js',
-                    /*'location' => '//cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js',*/
+                    /* 'location' => '//cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js', */
                 ],
                 [
                     'type' => 'css',
                     'asset' => true,
                     'location' => 'vendor/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css',
-                    /*'location' => '//cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css',*/
+                    /* 'location' => '//cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css', */
                 ],
             ],
         ],

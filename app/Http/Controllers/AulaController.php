@@ -10,8 +10,8 @@ class AulaController extends Controller
     public function __construct()
     {
         $this->middleware('permission:ver-aulas|crear-aulas|editar-aulas|borrar-aulas', ['only' => ['index']]);
-        $this->middleware('permission:crear-aulas', ['only' => ['create','store']]);
-        $this->middleware('permission:editar-aulas', ['only' => ['edit','update']]);
+        $this->middleware('permission:crear-aulas', ['only' => ['create', 'store']]);
+        $this->middleware('permission:editar-aulas', ['only' => ['edit', 'update']]);
         $this->middleware('permission:borrar-aulas', ['only' => ['destroy']]);
     }
 
@@ -21,7 +21,7 @@ class AulaController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         if ($search !== '') {
-            $like = '%' . $search . '%';
+            $like = '%'.$search.'%';
             $query->where(function ($query) use ($like) {
                 $query->where('nombre', 'like', $like)
                     ->orWhere('bloque', 'like', $like);
@@ -66,6 +66,7 @@ class AulaController extends Controller
     {
         // Cargamos las relaciones para visualizarlas en detalle
         $aula->load('computadores', 'reservas');
+
         return view('aulas.show', compact('aula'));
     }
 

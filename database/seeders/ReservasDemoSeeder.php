@@ -48,7 +48,7 @@ class ReservasDemoSeeder extends Seeder
         $computadores = collect();
         foreach ($aulasCreadas as $indiceAula => $aula) {
             for ($indiceEquipo = 1; $indiceEquipo <= 3; $indiceEquipo++) {
-                $serial = 'DEMO-' . str_pad((string) (($indiceAula * 3) + $indiceEquipo), 3, '0', STR_PAD_LEFT);
+                $serial = 'DEMO-'.str_pad((string) (($indiceAula * 3) + $indiceEquipo), 3, '0', STR_PAD_LEFT);
                 $computadores->push(Computador::firstOrCreate(
                     ['serial' => $serial],
                     [
@@ -104,7 +104,7 @@ class ReservasDemoSeeder extends Seeder
 
                 $permiteClave = in_array($estado, ['pendiente', 'confirmada', 'entregada'], true);
                 $clave = $permiteClave
-                    ? 'demo:' . $indice . ':' . $fecha . ':' . $bloque->id
+                    ? 'demo:'.$indice.':'.$fecha.':'.$bloque->id
                     : null;
 
                 Reserva::create([

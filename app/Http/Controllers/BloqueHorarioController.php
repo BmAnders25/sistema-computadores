@@ -11,8 +11,8 @@ class BloqueHorarioController extends Controller
     {
         // Sincronizado exactamente con los nombres del RoleSeeder
         $this->middleware('permission:ver-bloques-horarios|crear-bloques-horarios|editar-bloques-horarios|borrar-bloques-horarios', ['only' => ['index']]);
-        $this->middleware('permission:crear-bloques-horarios', ['only' => ['create','store']]);
-        $this->middleware('permission:editar-bloques-horarios', ['only' => ['edit','update']]);
+        $this->middleware('permission:crear-bloques-horarios', ['only' => ['create', 'store']]);
+        $this->middleware('permission:editar-bloques-horarios', ['only' => ['edit', 'update']]);
         $this->middleware('permission:borrar-bloques-horarios', ['only' => ['destroy']]);
     }
 
@@ -22,7 +22,7 @@ class BloqueHorarioController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         if ($search !== '') {
-            $like = '%' . $search . '%';
+            $like = '%'.$search.'%';
             $query->where(function ($query) use ($like) {
                 $query->where('nombre', 'like', $like)
                     ->orWhere('hora_inicio', 'like', $like)
@@ -58,10 +58,10 @@ class BloqueHorarioController extends Controller
         $this->validateRequest($request);
 
         BloqueHorario::create([
-            'nombre'      => $request->nombre,
+            'nombre' => $request->nombre,
             'hora_inicio' => $request->hora_inicio,
-            'hora_fin'    => $request->hora_fin,
-            'activo'      => $request->has('activo'),
+            'hora_fin' => $request->hora_fin,
+            'activo' => $request->has('activo'),
         ]);
 
         // Apunta a la ruta 'bloques-horarios.index' según tu menú AdminLTE
@@ -84,10 +84,10 @@ class BloqueHorarioController extends Controller
         $this->validateRequest($request);
 
         $bloqueHorario->update([
-            'nombre'      => $request->nombre,
+            'nombre' => $request->nombre,
             'hora_inicio' => $request->hora_inicio,
-            'hora_fin'    => $request->hora_fin,
-            'activo'      => $request->has('activo'),
+            'hora_fin' => $request->hora_fin,
+            'activo' => $request->has('activo'),
         ]);
 
         return redirect()->route('bloques-horarios.index')
@@ -105,17 +105,17 @@ class BloqueHorarioController extends Controller
     public function validateRequest(Request $request)
     {
         return $request->validate([
-            'nombre'      => 'required|string|max:100',
+            'nombre' => 'required|string|max:100',
             'hora_inicio' => 'required|date_format:H:i',
-            'hora_fin'    => 'required|date_format:H:i|after:hora_inicio',
-            'activo'      => 'nullable|boolean',
+            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
+            'activo' => 'nullable|boolean',
         ], [
-            'nombre.required'        => 'El nombre del bloque horario es obligatorio.',
-            'hora_inicio.required'   => 'La hora de inicio es obligatoria.',
-            'hora_inicio.date_format'=> 'El formato de hora de inicio debe ser HH:MM.',
-            'hora_fin.required'      => 'La hora de fin es obligatoria.',
-            'hora_fin.date_format'   => 'El formato de hora de fin debe ser HH:MM.',
-            'hora_fin.after'         => 'La hora de fin debe ser posterior a la hora de inicio.',
+            'nombre.required' => 'El nombre del bloque horario es obligatorio.',
+            'hora_inicio.required' => 'La hora de inicio es obligatoria.',
+            'hora_inicio.date_format' => 'El formato de hora de inicio debe ser HH:MM.',
+            'hora_fin.required' => 'La hora de fin es obligatoria.',
+            'hora_fin.date_format' => 'El formato de hora de fin debe ser HH:MM.',
+            'hora_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
         ]);
     }
 }

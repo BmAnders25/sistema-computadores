@@ -164,7 +164,7 @@ class NotificacionesReservasTest extends TestCase
             $this->assertSame($estado, $reserva->estado);
 
             $momento = Carbon::parse(
-                $reserva->fecha->toDateString() . ' ' . $reserva->bloque->{$horaClave},
+                $reserva->fecha->toDateString().' '.$reserva->bloque->{$horaClave},
                 config('app.timezone')
             );
             $this->assertEquals($segundos, $ahora->diffInSeconds($momento, false));

@@ -32,7 +32,7 @@ class OcupacionExport implements WithMultipleSheets
     public function sheets(): array
     {
         $metadatos = [
-            'Periodo' => $this->desde->toDateString() . ' a ' . $this->hasta->toDateString(),
+            'Periodo' => $this->desde->toDateString().' a '.$this->hasta->toDateString(),
             'Aula' => $this->aulaId ? ($this->aulaNombre ?? (string) $this->aulaId) : 'Todas las aulas',
             'Estado' => $this->estado ?: 'Todos',
             'Generado el' => Carbon::now()->format('Y-m-d H:i'),
@@ -46,13 +46,7 @@ class OcupacionExport implements WithMultipleSheets
     }
 }
 
-class OcupacionResumenSheet implements
-    FromArray,
-    WithTitle,
-    WithEvents,
-    WithColumnWidths,
-    ShouldAutoSize,
-    WithStrictNullComparison
+class OcupacionResumenSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithTitle
 {
     private const TITULO = 'S.R.C. — Reporte de Ocupación (Universidad de Pamplona)';
 
@@ -182,15 +176,10 @@ class OcupacionResumenSheet implements
     }
 }
 
-class OcupacionDetalleSheet implements
-    FromArray,
-    WithTitle,
-    WithEvents,
-    WithColumnWidths,
-    ShouldAutoSize,
-    WithStrictNullComparison
+class OcupacionDetalleSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithTitle
 {
     private const TITULO = 'S.R.C. — Reporte de Ocupación (Universidad de Pamplona)';
+
     private const ULTIMA_COLUMNA = 'F';
 
     public function __construct(
@@ -257,7 +246,7 @@ class OcupacionDetalleSheet implements
             AfterSheet::class => function (AfterSheet $event): void {
                 $sheet = $event->sheet->getDelegate();
                 $ultimaFila = max(8, $sheet->getHighestRow());
-                $sheet->mergeCells('A1:' . self::ULTIMA_COLUMNA . '1');
+                $sheet->mergeCells('A1:'.self::ULTIMA_COLUMNA.'1');
                 for ($row = 2; $row <= 6; $row++) {
                     $sheet->mergeCells("B{$row}:F{$row}");
                 }

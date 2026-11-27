@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -14,17 +13,18 @@ class EstadoCuentaMailable extends Mailable
     use Queueable, SerializesModels;
 
     public $asociado;
+
     public $rutaArchivo;
 
     /**
      * Create a new message instance.
      *
-     * @param mixed $asociado Información del asociado.
-     * @param string $rutaArchivo Ruta relativa del archivo PDF.
+     * @param  mixed  $asociado  Información del asociado.
+     * @param  string  $rutaArchivo  Ruta relativa del archivo PDF.
      */
     public function __construct($asociado, $rutaArchivo)
     {
-        //dd($rutaArchivo);
+        // dd($rutaArchivo);
         $this->asociado = $asociado;
         $this->rutaArchivo = $rutaArchivo;
     }
@@ -35,23 +35,22 @@ class EstadoCuentaMailable extends Mailable
     public function build()
     {
         // Obtener la ruta completa del archivo
-        $rutaCompleta = storage_path('app/' . $this->rutaArchivo);
+        $rutaCompleta = storage_path('app/'.$this->rutaArchivo);
 
         // Validar que el archivo exista antes de adjuntarlo
-        if (!file_exists($rutaCompleta)) {
+        if (! file_exists($rutaCompleta)) {
             throw new \Exception("El archivo especificado no existe: {$rutaCompleta}");
         }
 
         // Construir el correo con el destinatario y el adjunto
         return $this->to($this->asociado->email) // Dirección de correo del asociado
-            ->subject('Estado de Cuenta de ' . $this->asociado->nombre)
+            ->subject('Estado de Cuenta de '.$this->asociado->nombre)
             ->view('emails.estado_cuenta', ['asociado' => $this->asociado])
             ->attach($rutaCompleta, [
-                'as' => 'estado_cuenta_' . $this->asociado->id . '.pdf',
+                'as' => 'estado_cuenta_'.$this->asociado->id.'.pdf',
                 'mime' => 'application/pdf',
             ]);
     }
-
 
     /**
      * Get the message envelope.

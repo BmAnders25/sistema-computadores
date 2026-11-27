@@ -21,8 +21,8 @@ class PruebaLimiteDiarioSeeder extends BasePruebaSeeder
         $usados = [];
 
         foreach ($horarios as $indice => [$horaInicio, $horaFin]) {
-            $inicio = Carbon::parse($mañana . ' ' . $horaInicio, config('app.timezone'));
-            $fin = Carbon::parse($mañana . ' ' . $horaFin, config('app.timezone'));
+            $inicio = Carbon::parse($mañana.' '.$horaInicio, config('app.timezone'));
+            $fin = Carbon::parse($mañana.' '.$horaFin, config('app.timezone'));
             $bloque = $this->bloque(sprintf('PRUEBA-LIMITE-%02d', $indice + 1), $inicio, $fin);
             $equipo = $this->equipoLibre($user, $mañana, $bloque, $usados);
             $reserva = $equipo
@@ -32,10 +32,10 @@ class PruebaLimiteDiarioSeeder extends BasePruebaSeeder
             if ($equipo) {
                 $usados[] = $equipo->id;
             } else {
-                $this->command?->warn("No se pudo crear el slot " . ($indice + 1) . " de prueba.limite.");
+                $this->command?->warn('No se pudo crear el slot '.($indice + 1).' de prueba.limite.');
             }
 
-            $this->resumen($user, 'Estudiante', 'Reserva ' . ($indice + 1) . ' de 5 para mañana', $reserva);
+            $this->resumen($user, 'Estudiante', 'Reserva '.($indice + 1).' de 5 para mañana', $reserva);
         }
     }
 }

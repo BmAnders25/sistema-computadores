@@ -2,21 +2,21 @@
 
 namespace App\Observers;
 
+use App\Models\Bitacora;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Models\Bitacora;
 
 class BitacoraObserver
 {
     public function created($model)
     {
-        Log::info('Observer ejecutado - CREATED para modelo: ' . class_basename($model));
+        Log::info('Observer ejecutado - CREATED para modelo: '.class_basename($model));
         $this->log('creó', $model);
     }
 
     public function updated($model)
     {
-        Log::info('Observer ejecutado - UPDATED para modelo: ' . class_basename($model));
+        Log::info('Observer ejecutado - UPDATED para modelo: '.class_basename($model));
 
         $detalles = $this->getChangesDetail($model);
         $this->log('actualizó', $model, $detalles);
@@ -24,7 +24,7 @@ class BitacoraObserver
 
     public function deleted($model)
     {
-        Log::info('Observer ejecutado - DELETED para modelo: ' . class_basename($model));
+        Log::info('Observer ejecutado - DELETED para modelo: '.class_basename($model));
         $this->log('eliminó', $model);
     }
 
@@ -32,16 +32,16 @@ class BitacoraObserver
     {
         try {
             Bitacora::create([
-                'fecha'   => now()->toDateString(),
-                'hora'    => now()->toTimeString(),
+                'fecha' => now()->toDateString(),
+                'hora' => now()->toTimeString(),
                 'usuario' => Auth::check() ? Auth::user()->name : 'Sistema',
-                'accion'  => 'El usuario ' . (Auth::check() ? Auth::user()->name : 'Sistema') .
-                             " $accion un registro en " . class_basename($model) .
-                             " (ID: " . ($model->id ?? 'sin ID') . ")" .
-                             ($detalles ? " con cambios: $detalles" : '')
+                'accion' => 'El usuario '.(Auth::check() ? Auth::user()->name : 'Sistema').
+                             " $accion un registro en ".class_basename($model).
+                             ' (ID: '.($model->id ?? 'sin ID').')'.
+                             ($detalles ? " con cambios: $detalles" : ''),
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al guardar en Bitácora: ' . $e->getMessage());
+            Log::error('Error al guardar en Bitácora: '.$e->getMessage());
         }
     }
 
@@ -50,7 +50,9 @@ class BitacoraObserver
         $detalles = [];
 
         foreach ($model->getChanges() as $campo => $nuevoValor) {
-            if ($campo === 'updated_at') continue;
+            if ($campo === 'updated_at') {
+                continue;
+            }
 
             $valorAnterior = $model->getOriginal($campo);
             $detalles[] = "$campo: '$valorAnterior' → '$nuevoValor'";

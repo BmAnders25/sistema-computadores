@@ -65,8 +65,8 @@ class DisponibilidadTest extends TestCase
 
         $this->assertCount(2, $overlappingReservations, $overlappingReservations->toJson());
 
-        $fechaInicio = $date . 'T10:00';
-        $fechaFin = $date . 'T12:00';
+        $fechaInicio = $date.'T10:00';
+        $fechaFin = $date.'T12:00';
 
         $response = $this->actingAs($user)
             ->withSession(['two_factor_passed' => true])
@@ -93,10 +93,10 @@ class DisponibilidadTest extends TestCase
 
         $createResponse = $this->get($reservaUrl);
         $createResponse->assertOk()
-            ->assertSee('value="' . $date . '"', false)
-            ->assertSee('name="bloque_horario_id" id="bloque_horario_id" value="' . $selectedBlock->id . '"', false)
-            ->assertSee('name="computador_id" id="computador_id" value="' . $availableComputer->id . '"', false)
-            ->assertSee('data-computer-id="' . $availableComputer->id . '"', false)
+            ->assertSee('value="'.$date.'"', false)
+            ->assertSee('name="bloque_horario_id" id="bloque_horario_id" value="'.$selectedBlock->id.'"', false)
+            ->assertSee('name="computador_id" id="computador_id" value="'.$availableComputer->id.'"', false)
+            ->assertSee('data-computer-id="'.$availableComputer->id.'"', false)
             ->assertSee('class="src-booking-resource is-selected"', false)
             ->assertDontSee('<select', false)
             ->assertSee('10:00')
@@ -112,8 +112,8 @@ class DisponibilidadTest extends TestCase
         $response = $this->actingAs($user)
             ->withSession(['two_factor_passed' => true])
             ->get(route('disponibilidad.index', [
-                'fecha_inicio' => $date . 'T10:30',
-                'fecha_fin' => $date . 'T11:30',
+                'fecha_inicio' => $date.'T10:30',
+                'fecha_fin' => $date.'T11:30',
             ]));
 
         $response->assertOk()
@@ -181,7 +181,7 @@ class DisponibilidadTest extends TestCase
                 'bloque_horario_id' => $defaultBlock->id,
                 'fecha' => today()->addDays($number)->toDateString(),
                 'estado' => 'pendiente',
-                'clave_unica' => 'reservation-pagination-' . $number,
+                'clave_unica' => 'reservation-pagination-'.$number,
             ]);
         }
 
@@ -220,7 +220,7 @@ class DisponibilidadTest extends TestCase
     private function createBlock(string $start, string $end): BloqueHorario
     {
         return BloqueHorario::create([
-            'nombre' => $start . ' - ' . $end,
+            'nombre' => $start.' - '.$end,
             'hora_inicio' => $start,
             'hora_fin' => $end,
             'activo' => true,

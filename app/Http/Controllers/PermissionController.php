@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
@@ -16,7 +16,7 @@ class PermissionController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         if ($search !== '') {
-            $query->where('name', 'like', '%' . $search . '%');
+            $query->where('name', 'like', '%'.$search.'%');
         }
 
         $estado = $request->query('estado');

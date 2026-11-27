@@ -1,24 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ConfiguracionController;
-use App\Http\Controllers\ComputadorController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\RolController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\LogoutController;
-use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\AulaController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\BloqueHorarioController;
-use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\ComputadorController;
+use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisponibilidadController;
 use App\Http\Controllers\EntregaController;
-use App\Http\Controllers\ReporteOcupacionController;
-use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\HerramientasPruebaController;
+use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ReporteOcupacionController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\RolController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnsureLocalEnvironment;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+
 Auth::routes(['register' => false]);
 
 // Segundo factor: requiere sesión, pero NO el middleware two-factor (evita bucle)
@@ -30,7 +31,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'two-factor'])->group(function () {
-    
+
     Route::get('/', [DisponibilidadController::class, 'index'])->name('home')
         ->middleware('permission:ver-disponibilidad');
     Route::get('/disponibilidad', [DisponibilidadController::class, 'index'])
@@ -73,15 +74,15 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         ->parameters(['computadores' => 'computador']);
     Route::resource('aulas', AulaController::class);
     Route::resource('bloques-horarios', BloqueHorarioController::class)->parameters([
-    'bloques-horarios' => 'bloqueHorario'
-]);
+        'bloques-horarios' => 'bloqueHorario',
+    ]);
     Route::resource('reservas', ReservaController::class);
     Route::post('/reservas/{reserva}/no-presentada', [ReservaController::class, 'marcarNoPresentada'])
         ->middleware(['permission:registrar-entregas', 'role:Celador|Administracion'])
         ->name('reservas.no-presentada');
     Route::patch('/reservas/{reserva}/confirmar', [ReservaController::class, 'confirmarIngreso'])
-    ->name('reservas.confirmar')
-    ->middleware(['auth', 'role:Celador|Administracion']); 
+        ->name('reservas.confirmar')
+        ->middleware(['auth', 'role:Celador|Administracion']);
     Route::resource('users', UserController::class);
     Route::resource('roles', RolController::class);
     Route::resource('permissions', PermissionController::class);
@@ -103,6 +104,4 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
         ->middleware(EnsureLocalEnvironment::class)
         ->name('herramientas.prueba.volver');
 
-    
 });
-

@@ -15,7 +15,7 @@ class AuthenticationTest extends TestCase
         $response = $this->get(route('login'));
 
         $response->assertOk()
-            ->assertSee('action="' . route('login') . '"', false)
+            ->assertSee('action="'.route('login').'"', false)
             ->assertSee('method="post"', false)
             ->assertSee('name="_token"', false)
             ->assertSee('name="email"', false)
@@ -71,7 +71,7 @@ class AuthenticationTest extends TestCase
             ->assertSee('autocomplete="one-time-code"', false)
             ->assertSee('aria-describedby="two-factor-instruction"', false)
             ->assertSee('¿No recibiste el código?')
-            ->assertSee('action="' . route('two-factor.verify') . '"', false)
-            ->assertSee('action="' . route('two-factor.resend') . '"', false);
+            ->assertSee('action="'.route('two-factor.verify').'"', false)
+            ->assertSee('action="'.route('two-factor.resend').'"', false);
     }
 }

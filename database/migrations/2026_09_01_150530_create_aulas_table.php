@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-    Schema::create('aulas', function (Blueprint $table) {
-        $table->id();
-        $table->string('bloque', 20);
-        $table->string('nombre', 50);
-        $table->unsignedSmallInteger('capacidad')->default(0);
-        $table->enum('estado', ['activo', 'inactivo'])->default('activo');
-        $table->timestamps();
-    
-        $table->unique(['bloque', 'nombre']);
-});
+        Schema::create('aulas', function (Blueprint $table) {
+            $table->id();
+            $table->string('bloque', 20);
+            $table->string('nombre', 50);
+            $table->unsignedSmallInteger('capacidad')->default(0);
+            $table->enum('estado', ['activo', 'inactivo'])->default('activo');
+            $table->timestamps();
+
+            $table->unique(['bloque', 'nombre']);
+        });
     }
 
     /**

@@ -17,11 +17,12 @@ class TwoFactorController extends Controller
     {
         $request->validate(['codigo' => 'required|digits:6']);
 
-        if (!$service->verificar($request->user(), $request->codigo)) {
+        if (! $service->verificar($request->user(), $request->codigo)) {
             return back()->withErrors(['codigo' => 'Código inválido o vencido.']);
         }
 
         $request->session()->put('two_factor_passed', true);
+
         return redirect()->intended('/');
     }
 
@@ -31,6 +32,7 @@ class TwoFactorController extends Controller
         if (app()->environment('local')) {
             session()->flash('two_factor_demo', $codigo);
         }
+
         return back()->with('status', 'Te enviamos un nuevo código.');
     }
 }

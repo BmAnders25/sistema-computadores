@@ -9,23 +9,23 @@ use Illuminate\Support\Facades\Auth;
 class EnsureTwoFactorVerified
 {
     public function handle(Request $request, Closure $next)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    if ($user && !$user->esActivo()) {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($user && ! $user->esActivo()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-        return redirect()->route('login')->withErrors([
-            'email' => 'Tu cuenta institucional no está activa. Comunícate con Administración.',
-        ]);
+            return redirect()->route('login')->withErrors([
+                'email' => 'Tu cuenta institucional no está activa. Comunícate con Administración.',
+            ]);
+        }
+
+        if ($user && $user->requiereDosPasos() && ! $request->session()->get('two_factor_passed')) {
+            return redirect()->route('two-factor.show');
+        }
+
+        return $next($request);
     }
-
-    if ($user && $user->requiereDosPasos() && !$request->session()->get('two_factor_passed')) {
-        return redirect()->route('two-factor.show');
-    }
-
-    return $next($request);
-}
 }

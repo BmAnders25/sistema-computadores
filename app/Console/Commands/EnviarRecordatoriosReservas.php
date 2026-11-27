@@ -35,7 +35,7 @@ class EnviarRecordatoriosReservas extends Command
 
             if ($reserva->estado === 'pendiente') {
                 $inicio = Carbon::parse(
-                    $reserva->fecha->toDateString() . ' ' . $reserva->bloque->hora_inicio,
+                    $reserva->fecha->toDateString().' '.$reserva->bloque->hora_inicio,
                     config('app.timezone')
                 );
 
@@ -47,7 +47,7 @@ class EnviarRecordatoriosReservas extends Command
 
             if ($reserva->estado === 'entregada') {
                 $fin = Carbon::parse(
-                    $reserva->fecha->toDateString() . ' ' . $reserva->bloque->hora_fin,
+                    $reserva->fecha->toDateString().' '.$reserva->bloque->hora_fin,
                     config('app.timezone')
                 );
 

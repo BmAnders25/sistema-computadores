@@ -35,34 +35,34 @@ class ConfirmacionReserva extends Notification
             config('app.timezone')
         )->locale('es')->translatedFormat('d \d\e F \d\e Y');
         $horaInicio = Carbon::parse(
-            $this->reserva->fecha->toDateString() . ' ' . $this->reserva->bloque->hora_inicio,
+            $this->reserva->fecha->toDateString().' '.$this->reserva->bloque->hora_inicio,
             config('app.timezone')
         )->format('H:i');
         $horaFin = Carbon::parse(
-            $this->reserva->fecha->toDateString() . ' ' . $this->reserva->bloque->hora_fin,
+            $this->reserva->fecha->toDateString().' '.$this->reserva->bloque->hora_fin,
             config('app.timezone')
         )->format('H:i');
 
         if ($this->reserva->aula_id !== null) {
-            $recurso = 'aula completa ' . $this->reserva->aula->nombre;
+            $recurso = 'aula completa '.$this->reserva->aula->nombre;
         } else {
             $computador = $this->reserva->computador;
             $recurso = trim(
-                ($computador?->marca ?? 'Computador') . ' ' .
+                ($computador?->marca ?? 'Computador').' '.
                 ($computador?->modelo ?? '')
             );
             if ($computador?->serial) {
-                $recurso .= ' (serial ' . $computador->serial . ')';
+                $recurso .= ' (serial '.$computador->serial.')';
             }
         }
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject('Solicitud de reserva recibida')
-            ->greeting('Hola ' . $notifiable->name)
+            ->greeting('Hola '.$notifiable->name)
             ->line('Registramos tu solicitud de reserva y está pendiente de aprobación.')
-            ->line('Recurso: ' . $recurso . '.')
-            ->line('Fecha: ' . $fecha . '.')
-            ->line('Horario: ' . $this->reserva->bloque->nombre . ', de ' . $horaInicio . ' a ' . $horaFin . '.')
+            ->line('Recurso: '.$recurso.'.')
+            ->line('Fecha: '.$fecha.'.')
+            ->line('Horario: '.$this->reserva->bloque->nombre.', de '.$horaInicio.' a '.$horaFin.'.')
             ->action('Ver mis reservas', route('reservas.index'))
             ->salutation('S.R.C. · Universidad de Pamplona');
     }

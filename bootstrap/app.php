@@ -14,10 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // REGISTRO DE ALIAS DE MIDDLEWARES (Laravel 11)
         $middleware->alias([
             'two-factor' => \App\Http\Middleware\EnsureTwoFactorVerified::class,
-            
+
             // Registramos el alias 'permission' que te está pidiendo Spatie
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role'       => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
     })

@@ -31,9 +31,9 @@ class ReservaConfirmada extends Notification
     {
         $datos = $this->toArray($notifiable);
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject($datos['titulo'])
-            ->greeting('Hola ' . $notifiable->name)
+            ->greeting('Hola '.$notifiable->name)
             ->line($datos['mensaje'])
             ->action('Ver mis reservas', $datos['url'])
             ->salutation('S.R.C. · Universidad de Pamplona');
@@ -47,16 +47,16 @@ class ReservaConfirmada extends Notification
             config('app.timezone')
         )->locale('es')->translatedFormat('d \d\e F \d\e Y');
         $inicio = Carbon::parse(
-            $this->reserva->fecha->toDateString() . ' ' . $this->reserva->bloque->hora_inicio,
+            $this->reserva->fecha->toDateString().' '.$this->reserva->bloque->hora_inicio,
             config('app.timezone')
         )->format('H:i');
         $fin = Carbon::parse(
-            $this->reserva->fecha->toDateString() . ' ' . $this->reserva->bloque->hora_fin,
+            $this->reserva->fecha->toDateString().' '.$this->reserva->bloque->hora_fin,
             config('app.timezone')
         )->format('H:i');
         $recurso = $this->reserva->aula_id
-            ? 'aula completa ' . $this->reserva->aula->nombre
-            : trim(($this->reserva->computador?->marca ?? 'computador') . ' ' . ($this->reserva->computador?->modelo ?? ''));
+            ? 'aula completa '.$this->reserva->aula->nombre
+            : trim(($this->reserva->computador?->marca ?? 'computador').' '.($this->reserva->computador?->modelo ?? ''));
 
         return "Tu reserva de {$recurso} quedó registrada para el {$fecha}, en el bloque {$this->reserva->bloque->nombre} ({$inicio} a {$fin}).";
     }

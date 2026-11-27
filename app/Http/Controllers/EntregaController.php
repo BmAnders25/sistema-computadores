@@ -38,7 +38,7 @@ class EntregaController extends Controller
 
         $search = trim((string) $request->query('search', ''));
         if ($search !== '') {
-            $like = '%' . $search . '%';
+            $like = '%'.$search.'%';
             $query->where(function ($query) use ($like) {
                 $query->whereHas('user', function ($users) use ($like) {
                     $users->where('name', 'like', $like)

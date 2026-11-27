@@ -23,7 +23,7 @@ class AsociadoFactory extends Factory
             'telefono' => fake()->text(30),
             'email' => fake()->text(80),
             'estado' => fake()->randomElement(['Activo', 'Suspendido', 'Retirado']),
-            'fecha_afiliacion' => fake()->date()
+            'fecha_afiliacion' => fake()->date(),
         ];
     }
 }

@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-use App\Observers\BitacoraObserver;
-
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -21,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        
+        if (str_contains(request()->getHost(), 'trycloudflare.com')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 }

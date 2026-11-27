@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Computador;
 use Illuminate\Support\Carbon;
 
 class PruebaRecordatorioInicioSeeder extends BasePruebaSeeder
